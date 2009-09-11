@@ -1721,6 +1721,15 @@ instance Enum (X0_ a) where
 	toEnum n = (X0_ n)
 	fromEnum (X0_ n) = n
 
+instance Num (X0_ a) where
+	fromInteger n = X0_ (fromInteger n)	-- bounds checking needed!
+	abs a = a 
+	signum (X0_ a) = if a == 0 then 0 else 1
+	(X0_ a) + (X0_ b) = X0_ (a + b)
+	(X0_ a) - (X0_ b) = X0_ (a - b)
+	(X0_ a) * (X0_ b) = X0_ (a * b)
+
+
 instance Show (X0_ a) where
 	show (X0_ a) = show a
 
@@ -1755,6 +1764,14 @@ instance Ix (X1_ a) where
 instance Enum (X1_ a) where
 	toEnum n = (X1_ n)
 	fromEnum (X1_ n) = n
+
+instance Num (X1_ a) where
+	fromInteger n = X1_ (fromInteger n)	-- bounds checking needed!
+	abs a = a 
+	signum (X1_ a) = if a == 0 then 0 else 1
+	(X1_ a) + (X1_ b) = X1_ (a + b)
+	(X1_ a) - (X1_ b) = X1_ (a - b)
+	(X1_ a) * (X1_ b) = X1_ (a * b)
 
 instance Show (X1_ a) where
 	show (X1_ a) = show a
