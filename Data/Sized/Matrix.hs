@@ -10,7 +10,7 @@ import qualified Data.Foldable as F
 import Data.Monoid
 import qualified Data.List as L
 
-import Data.Sized.Ix -- for testing
+import Data.Sized.Ix
 
 -- | A 'Matrix' is an array with the sized determined uniquely by the 
 -- /type/ of the index type, 'ix'. 
@@ -122,6 +122,10 @@ beside m1 m2 = transpose (transpose m1 `above` transpose m2)
 ixmap :: (Size i, Size j) => (i -> j) -> Matrix j a -> Matrix i a
 ixmap f m = (\ i -> m ! f i) <$> coord
 
+-- | look at a matrix through a functor lens, to another matrix.
+ixfmap :: (Size i, Size j, Functor f) => (i -> f j) -> Matrix j a -> Matrix i (f a)
+ixfmap f m = (fmap (\ j -> m ! j) . f) <$> coord
+
 -- | grab /part/ of a matrix.
 crop :: (Index i ~ Index ix, Size i, Size ix) => ix -> Matrix ix a -> Matrix i a
 crop corner = ixmap (\ i -> (addIndex corner (toIndex i)))
@@ -182,6 +186,5 @@ showMatrix m = joinLines $ map showRow m_rows
 
 
 instance (Show a, Size ix,Size (Row ix), Size (Column ix)) => Show (Matrix ix a) where
-	show = showMatrix . ixmap seeIn2D . fmap show
+	show = showMatrix . fmap show . ixmap seeIn2D 
 
-	
