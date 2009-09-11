@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, TypeFamilies, EmptyDataDecls, UndecidableInstances, ScopedTypeVariables  #-}
+{-# LANGUAGE TypeFamilies, EmptyDataDecls, UndecidableInstances, ScopedTypeVariables  #-}
 module Data.Sized.Ix 
 	( X0
 	, X1
@@ -264,12 +264,8 @@ module Data.Sized.Ix
 	, coerceSize
 	, ADD
 	, SUB
-	, X0_		-- for QC
-	, X1_		-- for QC
 	) where
 	
-import Language.Haskell.TH
-import Data.Sized.Ix.TH
 import Data.Ix
 import Data.Sized.Arith
 
@@ -323,94 +319,6 @@ instance (Size x, Size y, Size z,Size z2) => Size (x,y,z,z2) where
 coerceSize :: (Index ix1 ~ Index ix2, Size ix1, Size ix2, Num ix2) => ix1 -> ix2
 coerceSize ix = addIndex 0 (toIndex ix)
 
-instance Eq (X0_ a) where
-	(X0_ a) == (X0_ b) = a == b
-
-instance Ord (X0_ a) where
-	(X0_ a) `compare` (X0_ b) = a `compare` b
-
-instance Size a => Bounded (X0_ a) where
-	minBound = X0_ 0
-	maxBound = let a = X0_ (size a - 1) in a
-
-type instance Index (X0_ a)  = Int
-type instance Row (X0_ a)    = X1
-type instance Column (X0_ a) = X0_ a
-
-instance Size a => Size (X0_ a) where
-	size = const s
-	  where s = 2 * size (undefined :: a) 
-	addIndex (X0_ v) n = X0_ (v + n)	-- fix bounds issues
-	toIndex (X0_ v) = v
-	seeIn2D (_,y) = y
-
-instance Ix (X0_ a) where
-	range (X0_ a,X0_ b) = map X0_ (range (a,b))
-	index (X0_ a,X0_ b) (X0_ i) = index (a,b) i
-	inRange (X0_ a,X0_ b) (X0_ i) = inRange (a,b) i
-
-instance Enum (X0_ a) where
-	toEnum n = (X0_ n)
-	fromEnum (X0_ n) = n
-
-instance Num (X0_ a) where
-	fromInteger n = X0_ (fromInteger n)	-- bounds checking needed!
-	abs a = a 
-	signum (X0_ a) = if a == 0 then 0 else 1
-	(X0_ a) + (X0_ b) = X0_ (a + b)
-	(X0_ a) - (X0_ b) = X0_ (a - b)
-	(X0_ a) * (X0_ b) = X0_ (a * b)
-
-
-instance Show (X0_ a) where
-	show (X0_ a) = show a
-	
-instance Eq (X1_ a) where
-	(X1_ a) == (X1_ b) = a == b
-
-instance Ord (X1_ a) where
-	(X1_ a) `compare` (X1_ b) = a `compare` b
-
-instance Size a => Bounded (X1_ a) where
-	minBound = X1_ 0
-	maxBound = let a = X1_ (size a - 1) in a
-
-type instance Index (X1_ a)  = Int
-type instance Row (X1_ a)    = X1
-type instance Column (X1_ a) = X1_ a
-
-instance Size a => Size (X1_ a) where
-	size = const s
-	  where s = 2 * size (undefined :: a) + 1
-	addIndex (X1_ v) n = X1_ (v + n)	-- fix bounds issues
-	toIndex (X1_ v) = v
-	seeIn2D (_,y) = y
-
-instance Ix (X1_ a) where
-	range (X1_ a,X1_ b) = map X1_ (range (a,b))
-	index (X1_ a,X1_ b) (X1_ i) = index (a,b) i
-	inRange (X1_ a,X1_ b) (X1_ i) = inRange (a,b) i
-
-instance Enum (X1_ a) where
-	toEnum n = (X1_ n)
-	fromEnum (X1_ n) = n
-
-instance Num (X1_ a) where
-	fromInteger n = X1_ (fromInteger n)	-- bounds checking needed!
-	abs a = a 
-	signum (X1_ a) = if a == 0 then 0 else 1
-	(X1_ a) + (X1_ b) = X1_ (a + b)
-	(X1_ a) - (X1_ b) = X1_ (a - b)
-	(X1_ a) * (X1_ b) = X1_ (a * b)
-
-instance Show (X1_ a) where
-	show (X1_ a) = show a
-
-
-instance Bounded X0 where
-	minBound = error "minBound not defined"
-	maxBound = error "maxBound not defined"
-
 type instance Index X0  = Int
 type instance Row X0    = X1
 type instance Column X0 = X0
@@ -420,18 +328,39 @@ instance Size X0 where
 	addIndex X0 n = X0	-- TODO: fix bounds issues
 	toIndex X0 = 0
 	seeIn2D (_,y) = y
+
+instance Size a => Bounded (X1_ a) where
+	minBound = X1_ 0
+	maxBound = let a = X1_ (size a - 1) in a
 	
-instance Ix X0 where
-	range (X0,X0) = []
-	inRange (X0,X0) X0 = False
+type instance Index (X1_ a)  = Int
+type instance Row (X1_ a)    = X1
+type instance Column (X1_ a) = X1_ a
 
 
-instance Show X0 where
-	show X0 = "-"
+instance Size a => Size (X1_ a) where
+	size = const s
+	  where s = 2 * size (undefined :: a) + 1
+	addIndex (X1_ v) n = X1_ (v + n)	-- fix bounds issues
+	toIndex (X1_ v) = v
+	seeIn2D (_,y) = y
 
+type instance Index (X0_ a)  = Int
+type instance Row (X0_ a)    = X1
+type instance Column (X0_ a) = X0_ a
+
+instance Size a => Bounded (X0_ a) where
+	minBound = X0_ 0
+	maxBound = let a = X0_ (size a - 1) in a
+
+instance Size a => Size (X0_ a) where
+	size = const s
+	  where s = 2 * size (undefined :: a) 
+	addIndex (X0_ v) n = X0_ (v + n)	-- fix bounds issues
+	toIndex (X0_ v) = v
+	seeIn2D (_,y) = y
 	
 ------
-
 
 type X1 = X1_ X0
 type X2 = X0_ (X1_ X0)

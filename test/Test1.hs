@@ -8,6 +8,7 @@ import Test.QuickCheck as QC
 import Data.Sized.QC.Ix
 import Data.Sized.QC.Matrix
 import Control.Applicative
+import Data.Sized.Arith
 
 import Data.Array
 

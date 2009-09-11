@@ -28,7 +28,6 @@ Library
        Data.Sized.Signed,
        Data.Sized.Unsigned
   Other-modules:
-       Data.Sized.Ix.TH
   Ghc-Options:  -Wall
 
 Executable sized-types-test1
