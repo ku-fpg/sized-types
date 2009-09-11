@@ -99,7 +99,9 @@ identity = (\ (x,y) -> if x == y then 1 else 0) <$> coord
 -- | stack two matrixes 'above' each other.
 above :: (Size m, Size top, Size bottom, Size both
 	 , ADD top bottom ~ both
-	) 
+	 , SUB both top ~ bottom
+	 , SUB both bottom ~ top 
+	 ) 
       => Matrix (top,m) a -> Matrix (bottom,m) a -> Matrix (both,m) a
 above m1 m2 = fromList (toList m1 ++ toList m2)
 
@@ -108,8 +110,11 @@ beside
   :: (Size m,
       Size left,
       Size right,
-      Size both,
-      ADD left right ~ both) =>
+      Size both
+     , ADD left right ~ both
+     , SUB both left ~ right
+     , SUB both right ~ left
+     ) =>
      Matrix (m, left) a -> Matrix (m, right) a -> Matrix (m, both) a
 beside m1 m2 = transpose (transpose m1 `above` transpose m2)
 
