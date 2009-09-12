@@ -6,7 +6,8 @@ import Data.Sized.Matrix
 
 import Test.QuickCheck as QC
 import Data.Sized.QC.Ix
-import Data.Sized.QC.Matrix
+import Data.Sized.QC.Matrix as M
+import qualified Data.Sized.Sparse.Matrix2 as SM
 import Control.Applicative
 import Data.Sized.Arith
 

@@ -60,6 +60,13 @@ length = size . zeroOf
 assocs :: (Size i) => Matrix i a -> [(i,a)]
 assocs (Matrix a) = A.assocs a
 
+(//) :: (Size i) => Matrix i e -> [(i, e)] -> Matrix i e
+(//) (Matrix arr) ixs = Matrix (arr A.// ixs)
+
+accum :: (Size i) => (e -> a -> e) -> Matrix i e -> [(i, a)] -> Matrix i e
+accum f (Matrix arr) ixs = Matrix (A.accum f arr ixs)
+
+
 -- | 'zeroOf' is for use only to force typing issues, and is undefined.
 zeroOf :: (Size i) => Matrix i a -> i
 zeroOf _ = minBound
@@ -153,7 +160,6 @@ aColumn = ixmap fst
 -- | very general; required that m and n have the same number of elements, rebundle please.
 squash :: (Size n, Size m) => Matrix m a -> Matrix n a
 squash = fromList . toList
-
 
 instance (Size ix) => T.Traversable (Matrix ix) where
   traverse f a = matrix <$> (T.traverse f $ toList a)
