@@ -1,5 +1,8 @@
 {-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, UndecidableInstances, MultiParamTypeClasses #-}
-module Data.Sized.Matrix where
+module Data.Sized.Matrix 
+	( module Data.Sized.Matrix
+	, module Data.Sized.Ix
+	) where
 
 import Data.Array as A hiding (indices,(!), ixmap, assocs)
 import qualified Data.Array as A
@@ -7,7 +10,6 @@ import Prelude as P
 import Control.Applicative
 import qualified Data.Traversable as T
 import qualified Data.Foldable as F
-import Data.Monoid
 import qualified Data.List as L
 import Numeric 
 
@@ -135,8 +137,8 @@ ixfmap :: (Size i, Size j, Functor f) => (i -> f j) -> Matrix j a -> Matrix i (f
 ixfmap f m = (fmap (\ j -> m ! j) . f) <$> coord
 
 -- | grab /part/ of a matrix.
-crop :: (Index i ~ Index ix, Size i, Size ix) => ix -> Matrix ix a -> Matrix i a
-crop corner = ixmap (\ i -> (addIndex corner (toIndex i)))
+cropAt :: (Index i ~ Index ix, Size i, Size ix) => Matrix ix a -> ix -> Matrix i a
+cropAt m corner = ixmap (\ i -> (addIndex corner (toIndex i))) m
 
 -- | slice a 2D matrix into rows.
 rows :: (Bounded n, Size n, Bounded m, Size m) => Matrix (m,n) a -> Matrix m (Matrix n a)
@@ -147,21 +149,28 @@ columns :: (Bounded n, Size n, Bounded m, Size m) => Matrix (m,n) a -> Matrix n 
 columns = rows . transpose
 
 -- | join a matrix of matrixes into a single matrix.
-joinrows :: (Bounded n, Size n, Bounded m, Size m) => Matrix m (Matrix n a) -> Matrix (m,n) a
-joinrows a = (\ (m,n) -> (a ! m) ! n) <$> coord
+joinRows :: (Bounded n, Size n, Bounded m, Size m) => Matrix m (Matrix n a) -> Matrix (m,n) a
+joinRows a = (\ (m,n) -> (a ! m) ! n) <$> coord
 
 -- | join a matrix of matrixes into a single matrix.
-joincolumns :: (Bounded n, Size n, Bounded m, Size m) => Matrix n (Matrix m a) -> Matrix (m,n) a
-joincolumns a = (\ (m,n) -> (a ! n) ! m) <$> coord
+joinColumns :: (Bounded n, Size n, Bounded m, Size m) => Matrix n (Matrix m a) -> Matrix (m,n) a
+joinColumns a = (\ (m,n) -> (a ! n) ! m) <$> coord
 
 -- | generate a 2D single row from a 1D matrix.
 unitRow :: (Size m, Bounded m) => Matrix m a -> Matrix (X1, m) a
 unitRow = ixmap snd
 
+-- | generate a 1D matrix from a 2D matrix.
+unRow :: (Size m, Bounded m) => Matrix (X1, m) a -> Matrix m a
+unRow = ixmap (\ n -> (0,n))
+
 -- | generate a 2D single column from a 1D matrix.
 unitColumn :: (Size m, Bounded m) => Matrix m a -> Matrix (m, X1) a
 unitColumn = ixmap fst
 
+-- | generate a 1D matrix from a 2D matrix.
+unColumn :: (Size m, Bounded m) => Matrix (m, X1) a -> Matrix m a
+unColumn = ixmap (\ n -> (n,0))
 
 -- | very general; required that m and n have the same number of elements, rebundle please.
 squash :: (Size n, Size m) => Matrix m a -> Matrix n a
@@ -173,17 +182,17 @@ instance (Size ix) => T.Traversable (Matrix ix) where
 instance (Size ix) => F.Foldable (Matrix ix) where
   foldMap f m = F.foldMap f (toList m)
 
--- |  'showMatrix' displays a 2D matrix, and is the worker for 'show'.
+-- | 'showMatrix' displays a 2D matrix, and is the worker for 'show'.
 -- 
---  GHCi> matrix [1..42] :: Matrix (X7,X6) Int
---  [  1,  2,  3,  4,  5,  6,
---     7,  8,  9, 10, 11, 12,
---    13, 14, 15, 16, 17, 18,
---    19, 20, 21, 22, 23, 24,
---    25, 26, 27, 28, 29, 30,
---    31, 32, 33, 34, 35, 36,
---    37, 38, 39, 40, 41, 42 ]
--- 
+-- > GHCi> matrix [1..42] :: Matrix (X7,X6) Int
+-- > [  1,  2,  3,  4,  5,  6,
+-- >    7,  8,  9, 10, 11, 12,
+-- >   13, 14, 15, 16, 17, 18,
+-- >   19, 20, 21, 22, 23, 24,
+-- >   25, 26, 27, 28, 29, 30,
+-- >   31, 32, 33, 34, 35, 36,
+-- >   37, 38, 39, 40, 41, 42 ]
+-- >
 
 showMatrix :: (Size n, Size m) => Matrix (m, n) String -> String
 showMatrix m = joinLines $ map showRow m_rows
@@ -200,6 +209,9 @@ showMatrix m = joinLines $ map showRow m_rows
 instance (Show a, Size ix,Size (Row ix), Size (Column ix)) => Show (Matrix ix a) where
 	show = showMatrix . fmap show . ixmap seeIn2D 
 
+-- | 'S' is shown as the contents, without the quotes.
+-- One use is a matrix of S, so that you can do show-style functions
+-- using fmap.
 newtype S = S String
 
 instance Show S where
