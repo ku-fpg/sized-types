@@ -1,3 +1,5 @@
+-- | Sized types X0 to X256.
+
 {-# LANGUAGE TypeFamilies, EmptyDataDecls, UndecidableInstances, ScopedTypeVariables  #-}
 module Data.Sized.Ix 
 	( X0
@@ -305,7 +307,7 @@ instance (Size x, Size y, Size z) => Size (x,y,z) where
 	size (a,b,c) = size a * size b * size c
 	addIndex (a,b,c) (a',b',c') = (addIndex a a',addIndex b b',addIndex c c')
 	toIndex (a,b,c) = (toIndex a, toIndex b,toIndex c)
-	seeIn2D (a,b) = error "Can not display 3D matrix in 2D"
+	seeIn2D (_a,_b) = error "Can not display 3D matrix in 2D"
 	
 type instance Index (a,b,c,d) = (Index a,Index b,Index c,Index d)
 
@@ -313,9 +315,9 @@ instance (Size x, Size y, Size z,Size z2) => Size (x,y,z,z2) where
 	size (a,b,c,d) = size a * size b * size c * size d
 	addIndex (a,b,c,d) (a',b',c',d') = (addIndex a a',addIndex b b',addIndex c c',addIndex d d')
 	toIndex (a,b,c,d) = (toIndex a, toIndex b,toIndex c,toIndex d)
-	seeIn2D (a,b) = error "Can not display 3D matrix in 2D"
+	seeIn2D (_a,_b) = error "Can not display 4D matrix in 2D"
 
--- A good way of converting from one index type to another index type.
+-- | A good way of converting from one index type to another index type, typically in another base.
 coerceSize :: (Index ix1 ~ Index ix2, Size ix1, Size ix2, Num ix2) => ix1 -> ix2
 coerceSize ix = addIndex 0 (toIndex ix)
 
@@ -325,7 +327,7 @@ type instance Column X0 = X0
 
 instance Size X0 where
 	size _ = 0
-	addIndex X0 n = X0	-- TODO: fix bounds issues
+	addIndex X0 _n = X0	-- TODO: fix bounds issues
 	toIndex X0 = 0
 	seeIn2D (_,y) = y
 
@@ -336,7 +338,6 @@ instance Size a => Bounded (X1_ a) where
 type instance Index (X1_ a)  = Int
 type instance Row (X1_ a)    = X1
 type instance Column (X1_ a) = X1_ a
-
 
 instance Size a => Size (X1_ a) where
 	size = const s

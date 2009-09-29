@@ -18,6 +18,8 @@ instance Functor (Matrix ix) where
 fromAssocList :: (Size i, Eq a) => a -> [(i,a)] -> Matrix i a
 fromAssocList d xs = Matrix d (Map.fromList [ (i,a) | (i,a) <- xs, a /= d ])
 
+toAssocList (Matrix d mp) = (d,Map.toList mp)
+
 -- | '!' looks up an element in the sparse matrix. If the element is not found
 -- in the sparse matrix, '!' returns the default value.
 (!) :: (Size ix) => Matrix ix a -> ix -> a
@@ -35,13 +37,19 @@ prune d sm@(Matrix d' m) | d == d'   = Matrix d (Map.filter (/= d) m)
 sparse :: (Size ix, Eq a) => a -> M.Matrix ix a -> Matrix ix a
 sparse d other = Matrix d (Map.fromList [ (i,v) | (i,v) <- M.assocs other, v /= d ])
 
+foldb1 f [x] = x
+foldb1 f xs = foldb1 f (take len_before xs) `f` foldb1 f (drop len_before xs)
+  where len = length xs
+	len_before = len `div` 2
+
 mm :: (Size m, Size n, Size m', Size n', n ~ m', Num a) => Matrix (m,n) a -> Matrix (m',n') a -> Matrix (m,n') a
 mm s1 s2 = Matrix 0 mp
   where
 	mp = Map.fromList [ ((x,y),v)
 			| (x,y) <- M.indices_
 			, let s = (rs M.! x) `Set.intersection` (cs M.! y)	 
-			, let v = sum [ s1 ! (x,k) * s2 ! (k,y) | k <- Set.toList s ]
+			, not (Set.null s)
+			, let v = foldb1 (+) [ s1 ! (x,k) * s2 ! (k,y) | k <- Set.toList s ]
 			, v /= 0
 			] 
 	sm1@(Matrix _ mp1) = prune 0 s1
@@ -73,3 +81,9 @@ m1 = M.matrix [1..6] :: M.Matrix (X2,X3) Int
 m2 = M.matrix [1..12] :: M.Matrix (X3,X4) Int
 m3 = m1 `M.mm` m2
 m4 = M.identity :: M.Matrix (X200,X200) Int
+
+
+zipWith :: (Size x) => (a -> b -> c) -> Matrix x a -> Matrix x b -> Matrix x c
+zipWith f m1 m2 = pure f <*> m1 <*> m2 
+	
+	

@@ -9,6 +9,7 @@ import qualified Data.Traversable as T
 import qualified Data.Foldable as F
 import Data.Monoid
 import qualified Data.List as L
+import Numeric 
 
 import Data.Sized.Ix
 
@@ -149,13 +150,18 @@ columns = rows . transpose
 joinrows :: (Bounded n, Size n, Bounded m, Size m) => Matrix m (Matrix n a) -> Matrix (m,n) a
 joinrows a = (\ (m,n) -> (a ! m) ! n) <$> coord
 
+-- | join a matrix of matrixes into a single matrix.
+joincolumns :: (Bounded n, Size n, Bounded m, Size m) => Matrix n (Matrix m a) -> Matrix (m,n) a
+joincolumns a = (\ (m,n) -> (a ! n) ! m) <$> coord
+
 -- | generate a 2D single row from a 1D matrix.
-aRow :: (Size m, Bounded m) => Matrix m a -> Matrix (X1, m) a
-aRow = ixmap snd
+unitRow :: (Size m, Bounded m) => Matrix m a -> Matrix (X1, m) a
+unitRow = ixmap snd
 
 -- | generate a 2D single column from a 1D matrix.
-aColumn :: (Size m, Bounded m) => Matrix m a -> Matrix (m, X1) a
-aColumn = ixmap fst
+unitColumn :: (Size m, Bounded m) => Matrix m a -> Matrix (m, X1) a
+unitColumn = ixmap fst
+
 
 -- | very general; required that m and n have the same number of elements, rebundle please.
 squash :: (Size n, Size m) => Matrix m a -> Matrix n a
@@ -167,8 +173,8 @@ instance (Size ix) => T.Traversable (Matrix ix) where
 instance (Size ix) => F.Foldable (Matrix ix) where
   foldMap f m = F.foldMap f (toList m)
 
--- | 'showMatrix' displays a 2D matrix, and is the worker for 'show'.
--- @
+-- |  'showMatrix' displays a 2D matrix, and is the worker for 'show'.
+-- 
 --  GHCi> matrix [1..42] :: Matrix (X7,X6) Int
 --  [  1,  2,  3,  4,  5,  6,
 --     7,  8,  9, 10, 11, 12,
@@ -177,7 +183,7 @@ instance (Size ix) => F.Foldable (Matrix ix) where
 --    25, 26, 27, 28, 29, 30,
 --    31, 32, 33, 34, 35, 36,
 --    37, 38, 39, 40, 41, 42 ]
--- @
+-- 
 
 showMatrix :: (Size n, Size m) => Matrix (m, n) String -> String
 showMatrix m = joinLines $ map showRow m_rows
@@ -193,4 +199,13 @@ showMatrix m = joinLines $ map showRow m_rows
 
 instance (Show a, Size ix,Size (Row ix), Size (Column ix)) => Show (Matrix ix a) where
 	show = showMatrix . fmap show . ixmap seeIn2D 
+
+newtype S = S String
+
+instance Show S where
+	show (S s) = s
+
+showAs :: (RealFloat a) => Int -> a -> S 
+showAs i a = S $ showEFloat (Just i) a ""
+
 

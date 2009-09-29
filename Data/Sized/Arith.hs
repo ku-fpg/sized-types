@@ -1,4 +1,6 @@
-{-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, UndecidableInstances, MultiParamTypeClasses, EmptyDataDecls  #-}
+-- | Basic type-level arithmetic, using base two.
+
+{-# LANGUAGE TypeFamilies, EmptyDataDecls, UndecidableInstances  #-}
 module Data.Sized.Arith where
 
 import Data.Ix
