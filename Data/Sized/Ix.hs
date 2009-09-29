@@ -260,6 +260,7 @@ module Data.Sized.Ix
 	, X255
 	, X256
 	, Size(..)
+	, all
 	, Index
 	, Row
 	, Column
@@ -268,8 +269,15 @@ module Data.Sized.Ix
 	, SUB
 	) where
 	
+import Prelude hiding (all)
 import Data.Ix
 import Data.Sized.Arith
+
+-- | A list of all possible indices.
+-- Unlike 'indices' in Matrix, this does not need the 'Matrix'
+-- argument, because the types determine the contents.
+all :: (Size i) => [i]
+all = range (minBound,maxBound)
 
 --- because of TH's lack of type families, will be added later.
 type family Index a

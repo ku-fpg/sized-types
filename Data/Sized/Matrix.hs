@@ -6,11 +6,11 @@ module Data.Sized.Matrix
 
 import Data.Array as A hiding (indices,(!), ixmap, assocs)
 import qualified Data.Array as A
-import Prelude as P
+import Prelude as P hiding (all)
 import Control.Applicative
 import qualified Data.Traversable as T
 import qualified Data.Foldable as F
-import qualified Data.List as L
+import qualified Data.List as L 
 import Numeric 
 
 import Data.Sized.Ix
@@ -46,14 +46,9 @@ fromList xs = check minBound maxBound
 matrix :: (Size i) => [a] -> Matrix i a
 matrix = fromList
 
--- | Unlike 'indices', this does not need the 'Matrix'
--- argument, because the types determine the contents.
-indices_ :: (Size i) => [i]
-indices_ = range (minBound,maxBound)
-
--- | 'indices' is a version of 'indices' that takes a type, for forcing the result type using the Matrix type.
+-- | 'indices' is a version of 'Data.Sized.Ix.all' that takes a type, for forcing the result type using the Matrix type.
 indices :: (Size i) => Matrix i a -> [i]
-indices _ = indices_
+indices _ = all
 
 -- | what is the length of a matrix?
 length :: (Size i) => Matrix i a -> Int
@@ -69,14 +64,13 @@ assocs (Matrix a) = A.assocs a
 accum :: (Size i) => (e -> a -> e) -> Matrix i e -> [(i, a)] -> Matrix i e
 accum f (Matrix arr) ixs = Matrix (A.accum f arr ixs)
 
-
--- | 'zeroOf' is for use only to force typing issues, and is undefined.
+-- | 'zeroOf' is for use to force typing issues, and is 0.
 zeroOf :: (Size i) => Matrix i a -> i
 zeroOf _ = minBound
 
 -- | 'coord' returns a matrix filled with indexes.
 coord :: (Size i) => Matrix i i
-coord = fromList Data.Sized.Matrix.indices_
+coord = fromList all
 
 -- | Same as for lists.
 zipWith :: (Size i) => (a -> b -> c) -> Matrix i a -> Matrix i b -> Matrix i c
@@ -96,7 +90,7 @@ instance (Size i) => Applicative (Matrix i) where
 	
 -- | 'mm' is the 2D matrix multiply.
 mm :: (Size m, Size n, Size m', Size n', n ~ m', Num a) => Matrix (m,n) a -> Matrix (m',n') a -> Matrix (m,n') a
-mm a b = forAll $ \ (i,j) -> sum [ a ! (i,r) * b ! (r,j) | r <- indices_ ]
+mm a b = forAll $ \ (i,j) -> sum [ a ! (i,r) * b ! (r,j) | r <- all ]
  
 -- | 'transpose' a 2D matrix.
 transpose :: (Size x, Size y) => Matrix (x,y) a -> Matrix (y,x) a
@@ -142,7 +136,7 @@ cropAt m corner = ixmap (\ i -> (addIndex corner (toIndex i))) m
 
 -- | slice a 2D matrix into rows.
 rows :: (Bounded n, Size n, Bounded m, Size m) => Matrix (m,n) a -> Matrix m (Matrix n a)
-rows a = (\ m -> matrix [ a ! (m,n) | n <- indices_ ]) <$> coord
+rows a = (\ m -> matrix [ a ! (m,n) | n <- all ]) <$> coord
 
 -- | slice a 2D matrix into columns.
 columns :: (Bounded n, Size n, Bounded m, Size m) => Matrix (m,n) a -> Matrix n (Matrix m a)

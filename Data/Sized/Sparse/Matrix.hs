@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, UndecidableInstances, MultiParamTypeClasses #-}
 module Data.Sized.Sparse.Matrix where
 	
-import Data.Sized.Ix
+import Data.Sized.Ix as X
 import qualified Data.Sized.Matrix as M
 import qualified Data.Map as Map
 import Data.Map (Map)
@@ -46,7 +46,7 @@ mm :: (Size m, Size n, Size m', Size n', n ~ m', Num a) => Matrix (m,n) a -> Mat
 mm s1 s2 = Matrix 0 mp
   where
 	mp = Map.fromList [ ((x,y),v)
-			| (x,y) <- M.indices_
+			| (x,y) <- X.all
 			, let s = (rs M.! x) `Set.intersection` (cs M.! y)	 
 			, not (Set.null s)
 			, let v = foldb1 (+) [ s1 ! (x,k) * s2 ! (k,y) | k <- Set.toList s ]
