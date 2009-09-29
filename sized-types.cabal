@@ -24,7 +24,7 @@ Library
   Exposed-modules:
        Data.Sized.Ix,
        Data.Sized.Matrix,
-       Data.Sized.Sparse.Matrix2,
+       Data.Sized.Sparse.Matrix,
        Data.Sized.Signed,
        Data.Sized.Unsigned
   Other-modules:
