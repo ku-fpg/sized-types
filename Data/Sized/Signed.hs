@@ -1,3 +1,12 @@
+-- | Signed, fixed sized numbers.
+-- 
+-- Copyright: (c) 2009 University of Kansas
+-- License: BSD3
+--
+-- Maintainer: Andy Gill <andygill@ku.edu>
+-- Stability: unstable
+-- Portability: ghc
+
 module Data.Sized.Signed 
 	( Signed
 	, toMatrix
@@ -13,7 +22,7 @@ newtype Signed ix = Signed Integer
 
 -- 'toMatrix' turns a sized 'Signed' value into a 'Matrix' of 'Bool's. 
 toMatrix :: Size ix => Signed ix -> Matrix ix Bool
-toMatrix s@(Signed v) = matrix $ take (bitSize s) $ map odd $ iterate (`div` 2) v
+toMatrix s@(Signed v) = matrix $ reverse $ take (bitSize s) $ map odd $ iterate (`div` 2) v
 
 -- 'toMatrix' turns a a 'Matrix' of 'Bool's into sized 'Signed' value. 
 fromMatrix :: Size ix => Matrix ix Bool -> Signed ix

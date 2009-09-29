@@ -1,4 +1,11 @@
 -- | Sized types X0 to X256.
+-- 
+-- Copyright: (c) 2009 University of Kansas
+-- License: BSD3
+--
+-- Maintainer: Andy Gill <andygill@ku.edu>
+-- Stability: unstable
+-- Portability: ghc
 
 {-# LANGUAGE TypeFamilies, EmptyDataDecls, UndecidableInstances, ScopedTypeVariables  #-}
 module Data.Sized.Ix 

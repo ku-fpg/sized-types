@@ -1,4 +1,12 @@
 -- | Basic type-level arithmetic, using base two.
+-- 
+-- Copyright: (c) 2009 University of Kansas
+-- License: BSD3
+--
+-- Maintainer: Andy Gill <andygill@ku.edu>
+-- Stability: unstable
+-- Portability: ghc
+
 
 {-# LANGUAGE TypeFamilies, EmptyDataDecls, UndecidableInstances  #-}
 module Data.Sized.Arith where

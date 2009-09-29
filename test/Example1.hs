@@ -1,6 +1,8 @@
 module Main where
 
 import Data.Sized.Matrix
+import Data.Sized.Signed as S
+import Data.Sized.Unsigned as U
 import Control.Applicative
 
 main :: IO ()
@@ -22,6 +24,17 @@ main = do
 		 	     then S "" 
 			     else showAs 3 v) 
 	      $ fmap (fromIntegral) example6 
+	
+	let s :: [Signed X4]
+	    s = [ x * y | x <- [1..5], y <- [0..5]]
+	print s
+
+	let u :: [Unsigned X4]
+	    u = [ x * y | x <- [1..5], y <- [0..5]]
+	print u
+	
+	print $ fmap S.toMatrix s
+	print $ fmap U.toMatrix u
 	
 
 example1 :: Matrix (X5,X5) Int

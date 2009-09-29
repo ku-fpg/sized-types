@@ -1,7 +1,17 @@
+-- | Unsigned, fixed sized numbers.
+-- 
+-- Copyright: (c) 2009 University of Kansas
+-- License: BSD3
+--
+-- Maintainer: Andy Gill <andygill@ku.edu>
+-- Stability: unstable
+-- Portability: ghc
+
 module Data.Sized.Unsigned 
 	( Unsigned
 	, toMatrix
 	, fromMatrix
+	, U1
 	) where
 	
 import Data.Sized.Matrix as M
@@ -12,7 +22,7 @@ import Data.Bits
 newtype Unsigned ix = Unsigned Integer 
 
 toMatrix :: Size ix => Unsigned ix -> Matrix ix Bool
-toMatrix s@(Unsigned v) = matrix $ take (bitSize s) $ map odd $ iterate (`div` 2) v
+toMatrix s@(Unsigned v) = matrix $ reverse $ take (bitSize s) $ map odd $ iterate (`div` 2) v
 
 fromMatrix :: Size ix => Matrix ix Bool -> Unsigned ix
 fromMatrix m = mkUnsigned $
@@ -61,5 +71,7 @@ instance (Size ix) => Bits (Unsigned ix) where
 	a `xor` b = fromMatrix (M.zipWith (/=) (toMatrix a) (toMatrix b))
 	a .|. b = fromMatrix (M.zipWith (||) (toMatrix a) (toMatrix b))
 	a .&. b = fromMatrix (M.zipWith (&&) (toMatrix a) (toMatrix b))
-		
+
+-- | common; numerically boolean.		
+type U1 = Unsigned X1
 
