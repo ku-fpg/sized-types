@@ -1,5 +1,5 @@
 Name:                sized-types
-Version:             0.1
+Version:             0.2
 Synopsis:            Sized types in Haskell.
 Description:         Providing indices, matrixes, sparse matrixes, and signed and unsigned bit vectors.
 Category:            Language
@@ -15,7 +15,7 @@ Cabal-Version:       >= 1.6
 
 Flag devel
   Description: Enable full development tree
-  Default:     False
+  Default:     True
 
 Library
   Build-Depends: base >= 4 && < 5, containers, array
@@ -33,9 +33,7 @@ Executable sized-types-test1
       Build-Depends: base, QuickCheck >= 2.0
       buildable: True
       Other-modules:
-        Data.Sized.QC.Ix,
-        Data.Sized.QC.Matrix,
-        Data.Sized.QC.Signed
+        Data.Sized.QC
     else
       Build-depends: base
       buildable: False

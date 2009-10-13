@@ -4,8 +4,7 @@ import Data.Sized.Ix
 import Data.Sized.Matrix
 
 import Test.QuickCheck as QC
-import Data.Sized.QC.Ix
-import Data.Sized.QC.Matrix as M
+import Data.Sized.QC
 import qualified Data.Sized.Sparse.Matrix as SM
 import Control.Applicative
 import Data.Sized.Arith
