@@ -1,0 +1,15 @@
+
+
+To build development version, and run tests uses
+
+% cabal configure -fall
+% cabal build
+
+To run tests, do
+
+% make runtests
+
+The reference outputs are in /ref, and the outputs from the current run are in /run.
+
+
+

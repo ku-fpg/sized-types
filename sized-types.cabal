@@ -13,7 +13,7 @@ Stability:	     alpha
 build-type: 	     Simple
 Cabal-Version:       >= 1.6
 
-Flag devel
+Flag all
   Description: Enable full development tree
   Default:     True
 
@@ -29,20 +29,20 @@ Library
   Ghc-Options:  -Wall
 
 Executable sized-types-test1
-    if flag(devel)
+    if flag(all)
       Build-Depends: base, QuickCheck >= 2.0
       buildable: True
       Other-modules:
-        Data.Sized.QC
+        QC
     else
       Build-depends: base
       buildable: False
     Main-Is:        Test1.hs
-    Hs-Source-Dirs: ., test
+    Hs-Source-Dirs: ., test, qc
     Ghc-Options: -Wall
 
 Executable sized-types-example1
-    if flag(devel)
+    if flag(all)
       Build-Depends: base
       buildable: True
     else

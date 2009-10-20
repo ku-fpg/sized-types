@@ -1,4 +1,6 @@
-module Data.Sized.QC where
+
+-- Copy this module if you need Quick Check.
+module QC where
 
 import qualified Test.QuickCheck as QC
 import Data.Sized.Ix
