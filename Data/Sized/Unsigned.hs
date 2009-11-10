@@ -75,7 +75,8 @@ instance (Size ix, Enum ix) => Bits (Unsigned ix) where
 	shiftR (Unsigned v) i = mkUnsigned (v `div` (2 ^ i))
  	rotate v i = fromMatrix (forAll $ \ ix -> m ! (toEnum ((fromEnum ix - i) `mod` M.length m)))
 		where m = toMatrix v
+        testBit u idx = toMatrix u ! (toEnum idx)
 
--- | common; numerically boolean.		
+-- | common; numerically boolean.
 type U1 = Unsigned X1
 
