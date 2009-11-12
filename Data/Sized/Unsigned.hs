@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 -- | Unsigned, fixed sized numbers.
 -- 
 -- Copyright: (c) 2009 University of Kansas
@@ -11,7 +13,10 @@ module Data.Sized.Unsigned
 	( Unsigned
 	, toMatrix
 	, fromMatrix
-	, U1
+	,      U1,  U2,  U3,  U4,  U5,  U6,  U7,  U8,  U9
+	, U10, U11, U12, U13, U14, U15, U16, U17, U18, U19
+	, U20, U21, U22, U23, U24, U25, U26, U27, U28, U29
+	, U30, U31, U32
 	) where
 	
 import Data.Sized.Matrix as M
@@ -77,6 +82,41 @@ instance (Size ix, Enum ix) => Bits (Unsigned ix) where
 		where m = toMatrix v
         testBit u idx = toMatrix u ! (toEnum idx)
 
+instance forall ix . (Size ix, Enum ix) => Bounded (Unsigned ix) where
+	minBound = Unsigned 0
+        maxBound = Unsigned (2 ^ (bitSize (undefined :: Unsigned ix) ) - 1)
+
 -- | common; numerically boolean.
 type U1 = Unsigned X1
 
+type U2 = Unsigned X2
+type U3 = Unsigned X3
+type U4 = Unsigned X4
+type U5 = Unsigned X5
+type U6 = Unsigned X6
+type U7 = Unsigned X7
+type U8 = Unsigned X8
+type U9 = Unsigned X9
+type U10 = Unsigned X10
+type U11 = Unsigned X11
+type U12 = Unsigned X12
+type U13 = Unsigned X13
+type U14 = Unsigned X14
+type U15 = Unsigned X15
+type U16 = Unsigned X16
+type U17 = Unsigned X17
+type U18 = Unsigned X18
+type U19 = Unsigned X19
+type U20 = Unsigned X20
+type U21 = Unsigned X21
+type U22 = Unsigned X22
+type U23 = Unsigned X23
+type U24 = Unsigned X24
+type U25 = Unsigned X25
+type U26 = Unsigned X26
+type U27 = Unsigned X27
+type U28 = Unsigned X28
+type U29 = Unsigned X29
+type U30 = Unsigned X30
+type U31 = Unsigned X31
+type U32 = Unsigned X32

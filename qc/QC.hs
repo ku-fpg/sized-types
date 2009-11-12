@@ -3,11 +3,9 @@
 module QC where
 
 import qualified Test.QuickCheck as QC
-import Data.Sized.Ix
+import Data.Sized.Ix()
 import Data.Sized.Matrix as M
 import Data.Sized.Arith
-import Data.Sized.Signed as S
-import Data.Sized.Unsigned as U
 
 instance Size n => QC.Arbitrary (X0_ n) where
 	arbitrary = QC.elements [minBound .. maxBound]

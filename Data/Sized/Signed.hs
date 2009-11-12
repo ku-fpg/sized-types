@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 -- | Signed, fixed sized numbers.
 -- 
 -- Copyright: (c) 2009 University of Kansas
@@ -11,6 +13,10 @@ module Data.Sized.Signed
 	( Signed
 	, toMatrix
 	, fromMatrix
+	,           S2,  S3,  S4,  S5,  S6,  S7,  S8,  S9
+	, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19
+	, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29
+	, S30, S31, S32
 	) where
 	
 import Data.Sized.Matrix as M
@@ -80,4 +86,41 @@ instance (Size ix, Enum ix) => Bits (Signed ix) where
 		where m = toMatrix v
         testBit u idx = toMatrix u ! (toEnum idx)
 
+instance forall ix . (Size ix, Enum ix) => Bounded (Signed ix) where
+	minBound = Signed (- maxMagnitude)
+            where maxMagnitude = 2 ^ ((bitSize (undefined :: Signed ix)) -1)
+        maxBound = Signed (maxMagnitude - 1)
+            where maxMagnitude = 2 ^ ((bitSize (undefined :: Signed ix)) -1)
 
+
+type S2 = Signed X2
+type S3 = Signed X3
+type S4 = Signed X4
+type S5 = Signed X5
+type S6 = Signed X6
+type S7 = Signed X7
+type S8 = Signed X8
+type S9 = Signed X9
+type S10 = Signed X10
+type S11 = Signed X11
+type S12 = Signed X12
+type S13 = Signed X13
+type S14 = Signed X14
+type S15 = Signed X15
+type S16 = Signed X16
+type S17 = Signed X17
+type S18 = Signed X18
+type S19 = Signed X19
+type S20 = Signed X20
+type S21 = Signed X21
+type S22 = Signed X22
+type S23 = Signed X23
+type S24 = Signed X24
+type S25 = Signed X25
+type S26 = Signed X26
+type S27 = Signed X27
+type S28 = Signed X28
+type S29 = Signed X29
+type S30 = Signed X30
+type S31 = Signed X31
+type S32 = Signed X32
