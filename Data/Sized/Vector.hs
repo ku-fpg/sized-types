@@ -9,8 +9,8 @@ import Data.List as L
 data Vector ix a = Vector (A.Array ix a)
 	deriving Show
 
-array :: (Bounds ix) => ix -> [a] -> Vector ix a
-array ix vals = Vector (A.listArray (toBounds ix) vals)
+vector :: (Bounds ix) => ix -> [a] -> Vector ix a
+vector ix vals = Vector (A.listArray (toBounds ix) vals)
 
 class (A.Ix ix) => Bounds ix where
   toBounds :: ix -> (ix,ix)
@@ -28,11 +28,33 @@ instance (Bounds a, Bounds b) => Bounds (a,b) where
 	where ix1 = fromBounds (l1,h1)
 	      ix2 = fromBounds (l2,h2)
 
+toList :: (Bounds ix) => Vector ix a -> [a]
+toList (Vector a) = A.elems a
+
+assocs :: (Bounds ix) => Vector ix a -> [(ix,a)]
+assocs (Vector a) = A.assocs a
+
+size :: Bounds ix => Vector ix a -> ix
+size (Vector a) = fromBounds $ A.bounds a
+
+indices (Vector a) = A.indices a
+
+ixmap :: (Bounds i, Bounds j) => (i,i) -> (i -> j) -> Vector j a -> Vector i a
+ixmap b f v = undefined -- (\ i -> v ! f i) <$> coord
+              where is = undefined 
+
+above :: (Bounds x, Bounds y, Num x, Num y) => Vector (x,y) a -> Vector (x,y) a -> Vector (x,y) a
+above v1 v2 | cols v1 == cols v2 = vector (rows v1 + rows v2, cols v1) xs
+            | otherwise            = error "Column count mismatch"
+            where cols v = snd $ size v
+                  rows v = fst $ size v
+                  xs = toList v1 ++ toList v2
+
+
+
 --instance (Show a, Size ix,Size (Row ix), Size (Column ix)) => Show (Vector ix a) where
 --	show arr = showMatrix' (fmap show (ixmap seeIn2D arr))
 
---ixmap :: (Size i, Size j) => (i -> j) -> Matrix j a -> Matrix i a
---ixmap f m = (\ i -> m ! f i) <$> coord
 	
 	
 
