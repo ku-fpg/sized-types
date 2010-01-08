@@ -23,15 +23,15 @@ matrix2 (x,y) vs = Matrix (listArray ((0,0),(x-1,y-1)) vs)
 
 
 
-data SubMatrix a = SplitH (SubMatrix a) (SubMatrix a)
-                    | SplitV (SubMatrix a) (SubMatrix a)
+data TreeMatrix a = SplitH (TreeMatrix a) (TreeMatrix a)
+                    | SplitV (TreeMatrix a) (TreeMatrix a)
                     | NonZero Int (Vector Int a)
                     | Zero Int
                  deriving Show
 
 -- matrixtoSubMatrix should take a matrix and split it 
-vectorToSubMatrix v s | pleaseSplitV = SplitV (vectorToSubMatrix vLeft s) (vectorToSubMatrix vRight s)
-                      | pleaseSplitH = SplitH (vectorToSubMatrix vTop s) (vectorToSubMatrix vBottom s)
+toTreeMatrix v s | pleaseSplitV = SplitV (toTreeMatrix vLeft s) (toTreeMatrix vRight s)
+                      | pleaseSplitH = SplitH (toTreeMatrix vTop s) (toTreeMatrix vBottom s)
                       | isZeros v    = Zero s
 --                      | trace (show ("argh")) False = undefined
                       | otherwise    = NonZero shiftBy (fromIdentity v shiftBy)
@@ -55,11 +55,11 @@ splitVectorH v row | row < numRows = (vTop,vBottom)
           (numRows,numCols) = size v
 
 
-subMatrixToVector :: (Num a) => SubMatrix a -> Vector (Int,Int) a
-subMatrixToVector (Zero s)            = zeros (s,s)
-subMatrixToVector (NonZero x v)       = shiftH x $ toIdentity v
-subMatrixToVector (SplitH top bot)    = (subMatrixToVector top) `above` (subMatrixToVector bot)
-subMatrixToVector (SplitV left right) = (subMatrixToVector left) `beside` (subMatrixToVector right)
+fromTreeMatrix :: (Num a) => TreeMatrix a -> Vector (Int,Int) a
+fromTreeMatrix (Zero s)            = zeros (s,s)
+fromTreeMatrix (NonZero x v)       = shiftH x $ toIdentity v
+fromTreeMatrix (SplitH top bot)    = (fromTreeMatrix top) `above` (fromTreeMatrix bot)
+fromTreeMatrix (SplitV left right) = (fromTreeMatrix left) `beside` (fromTreeMatrix right)
 
 toIdentity :: (Bounds ix, Num a) => Vector ix a -> Vector (ix,ix) a
 toIdentity v = vector (ix,ix) [ if x == y then v ! x else 0 | x <- ids, y <- ids]
@@ -95,8 +95,8 @@ vecEqualTo v1 v2 = (numElemsEq,contentsEq)
 
 main = do
   g <- readH
---  let var = vectorToSubMatrix g 32
-  let g' = subMatrixToVector $ vectorToSubMatrix g 32
+--  let var = toTreeMatrix g 32
+  let g' = fromTreeMatrix $ toTreeMatrix g 32
 --  let gstr = unlines $ map unwords $ toList $ fmap toList $ rows $ fmap show g
 -- let gstr'= unlines $ map unwords $ toList $ fmap toList $ rows $ fmap show g'
 --   writeFile "gfst" gstr
