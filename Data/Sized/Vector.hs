@@ -1,5 +1,5 @@
 
-{-# LANGUAGE TypeFamilies, EmptyDataDecls, UndecidableInstances, FlexibleInstances #-}
+{-# LANGUAGE TypeFamilies, EmptyDataDecls, UndecidableInstances, FlexibleInstances, OverlappingInstances #-}
 
 module Data.Sized.Vector where
 
@@ -58,6 +58,9 @@ transpose :: (Bounds x, Bounds y) => Vector (x,y) a -> Vector (y,x) a
 transpose v = ixmap (y',x') (\ (x,y) -> (y,x)) v
     where (x',y') = size v
 
+identity :: (Bounds ix, Num a) => ix -> Vector (ix,ix) a
+identity ix = vector (ix,ix) [if x == y then 1 else 0 | (x,y) <- range $ toBounds (ix,ix)]
+
 rows :: (Bounds x, Bounds y) => Vector (x,y) a -> Vector x (Vector y a)
 rows v = vector xmax $ map (vector ymax) [[v ! (x,y) | y <- range (yl,yh)] | x <- range (xl,xh)]
          where (xmax,ymax) = size v
@@ -82,9 +85,13 @@ show' v = showMatrix' (size v) (foo v)
 
 foo v = toList $ fmap toList $ rows $ fmap show v
 
-instance (Show a, Bounds ix) => Show (Vector (ix,ix) a) where
-	show arr = show' arr
 
+seeIn2D :: (Bounds ix, Num ix) => Vector ix a -> Vector (ix,ix) a
+seeIn2D v = vector (1,size v) (toList v)
+
+
+instance (Show a, Bounds ix) => Show (Vector (ix,ix) a) where show vector = show' vector
+instance (Show a, Bounds ix, Num ix) => Show (Vector ix a) where show vector = show' $ seeIn2D vector
 
 
 --instance (Show a, Size ix,Size (Row ix), Size (Column ix)) => Show (Vector ix a) where
