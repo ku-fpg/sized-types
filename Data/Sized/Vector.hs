@@ -4,7 +4,7 @@
 module Data.Sized.Vector where
 
 import qualified Data.Array as A
-import Data.List as L
+import qualified Data.List as L
 
 data Vector ix a = Vector (A.Array ix a)
 --	deriving Show
@@ -51,11 +51,12 @@ bounds v = toBounds $ size v
 indices :: (Bounds ix) => Vector ix a -> [ix]
 indices (Vector a) = A.indices a
 
--- ixmap :: (Bounds i, Bounds j) => i -> (i -> j) -> Vector j a -> Vector i a
-ixmap b f v = undefined -- vector b [v ! f idx | idx <- range b]
+ixmap :: (Bounds i, Bounds j) => i -> (i -> j) -> Vector j a -> Vector i a
+ixmap b f v = vector b [v ! f idx | idx <- range (toBounds b)]
 
 transpose :: (Bounds x, Bounds y) => Vector (x,y) a -> Vector (y,x) a
-transpose v = undefined -- ixmap (size v) (\ (x,y) -> (y,x)) v
+transpose v = ixmap (y',x') (\ (x,y) -> (y,x)) v
+    where (x',y') = size v
 
 rows :: (Bounds x, Bounds y) => Vector (x,y) a -> Vector x (Vector y a)
 rows v = vector xmax $ map (vector ymax) [[v ! (x,y) | y <- range (yl,yh)] | x <- range (xl,xh)]
@@ -74,14 +75,8 @@ above v1 v2 | numcols v1 == numcols v2 = vector (numrows v1 + numrows v2, numcol
                   numrows v = fst $ size v
                   xs = toList v1 ++ toList v2
 
--- This function is broken... Need to fiddle with cols/uncols probably
 beside :: (Bounds x, Bounds y, Num x, Num y) => Vector (x,y) a -> Vector (x,y) a -> Vector (x,y) a
-beside v1 v2 | numrows v1 == numrows v2 = vector (numrows v1, numcols v1 + numcols v2) xs
-            | otherwise            = error "Column count mismatch"
-            where numcols v = snd $ size v
-                  numrows v = fst $ size v
-                  xs = toList v1 ++ toList v2
-
+beside v1 v2 = transpose $ transpose v1 `above` transpose v2
 
 show' v = showMatrix' (size v) (foo v)
 
@@ -89,6 +84,7 @@ foo v = toList $ fmap toList $ rows $ fmap show v
 
 instance (Show a, Bounds ix) => Show (Vector (ix,ix) a) where
 	show arr = show' arr
+
 
 
 --instance (Show a, Size ix,Size (Row ix), Size (Column ix)) => Show (Vector ix a) where
