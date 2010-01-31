@@ -28,6 +28,8 @@ Library
        Data.Sized.Unsigned
        Data.Sized.Vector
        Data.Sized.TreeMatrix
+       Data.Sized.Sampled
+
   Ghc-Options:  -Wall
 
 Executable sized-types-test1
