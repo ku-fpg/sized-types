@@ -50,4 +50,16 @@ instance (Size ix, Enum ix, Size m) => Fractional (Sampled m ix) where
 	fromRational n      = mkSampled n
 	recip (Sampled _ n) = mkSampled $ recip n
 
+-- This is a bit of a hack, and may generate -ve values from fromEnum.
+instance (Size ix, Enum ix, Size m) => Enum (Sampled m ix) where
+	fromEnum (Sampled n _) = fromEnum n
+
+	toEnum n = mkSampled (fromIntegral scale * fromIntegral val / fromIntegral precision)
+	   where val :: Signed ix
+		 val = toEnum n
+   		 scale     :: Integer
+	 	 scale     = fromIntegral (size (undefined :: m))
+	 	 precision :: Integer
+	 	 precision = 2 ^ (fromIntegral (size (undefined :: ix) - 1) :: Integer)
+
 
