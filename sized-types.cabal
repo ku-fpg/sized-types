@@ -25,9 +25,9 @@ Library
        Data.Sized.Matrix,
        Data.Sized.Sparse.Matrix,
        Data.Sized.Signed,
-       Data.Sized.Unsigned
-       Data.Sized.Vector
-       Data.Sized.TreeMatrix
+       Data.Sized.Unsigned,
+       Data.Sized.Vector,
+       Data.Sized.TreeMatrix,
        Data.Sized.Sampled
 
   Ghc-Options:  -Wall
