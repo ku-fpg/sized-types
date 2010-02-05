@@ -45,8 +45,13 @@ type instance NOT X0 = N1
 type instance NOT (X0_ a) = APP1 (NOT a)  
 type instance NOT (X1_ a) = APP0 (NOT a)
 
-
 type SUB a b = ADD a (SUCC (NOT b))
+
+type family MUL a b
+type instance MUL x X0      = X0
+type instance MUL x (X0_ b) = ADD x (MUL x (ADD (X0_ b) N1))
+type instance MUL x (X1_ b) = ADD x (MUL x (ADD (X1_ b) N1))
+type instance MUL x N1      = SUB X0 x
 
 
 type family SUCC a

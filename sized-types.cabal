@@ -1,5 +1,5 @@
 Name:                sized-types
-Version:             0.2.3
+Version:             0.2.4
 Synopsis:            Sized types in Haskell.
 Description:         Providing indices, matrixes, sparse matrixes, and signed and unsigned bit vectors.
 Category:            Language
