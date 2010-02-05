@@ -223,4 +223,30 @@ instance Show S where
 showAs :: (RealFloat a) => Int -> a -> S 
 showAs i a = S $ showEFloat (Just i) a ""
 
+scanM :: (Size ix, Bounded ix, Enum ix)
+      => ((left,a,right) -> (right,b,left))
+      -> (left, Matrix ix a,right)
+      -> (right,Matrix ix b,left)
+scanM f (l,m,r) =  ( fst3 (tmp ! minBound), snd3 `fmap` tmp, trd3 (tmp ! maxBound) )
+  where tmp = forEach m $ \ i a -> f (prev i, a, next i)
+	prev i = if i == minBound then l else (trd3 (tmp ! (pred i)))
+	next i = if i == maxBound then r else (fst3 (tmp ! (succ i)))
+	fst3 (a,_,_) = a
+	snd3 (_,b,_) = b
+	trd3 (_,_,c) = c
 
+scanL :: (Size ix, Bounded ix, Enum ix)
+      => ((a,right) -> (right,b))
+      -> (Matrix ix a,right)
+      -> (right,Matrix ix b)
+scanL = error "to be written"
+
+scanR :: (Size ix, Bounded ix, Enum ix)
+      => ((left,a) -> (b,left))
+      -> (left, Matrix ix a)
+      -> (Matrix ix b,left)
+scanR f (l,m) = ( fst `fmap` tmp, snd (tmp ! maxBound) )
+  where tmp = forEach m $ \ i a -> f (prev i,a)
+	prev i = if i == minBound then l else (snd (tmp ! (pred i)))
+
+ 
