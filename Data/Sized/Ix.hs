@@ -346,10 +346,20 @@ instance Size X0 where
 	toIndex X0 = 0
 	seeIn2D (_,y) = y
 
+instance Integral X0 where		
+	toInteger a = toInteger (size a)
+instance Real X0 where		
+instance Enum X0 where		
+instance Num X0 where			
+
 instance Size a => Bounded (X1_ a) where
 	minBound = X1_ 0
 	maxBound = let a = X1_ (size a - 1) in a
-	
+
+instance Real (X1_ a) where
+instance (Size (X1_ a), Integral a) => Integral (X1_ a) where		
+	toInteger a = toInteger (size a)
+
 type instance Index (X1_ a)  = Int
 type instance Row (X1_ a)    = X1
 type instance Column (X1_ a) = X1_ a
@@ -376,6 +386,9 @@ instance Size a => Size (X0_ a) where
 	toIndex (X0_ v) = v
 	seeIn2D (_,y) = y
 	
+instance Real (X0_ a) where
+instance (Size (X0_ a), Integral a) => Integral (X0_ a) where		
+	toInteger a = toInteger (size a)
 ------
 
 type X1 = X1_ X0
