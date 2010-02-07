@@ -2,7 +2,8 @@
 module Data.Sized.Sampled where
 
 import Data.Ratio
-import Data.Sized.Signed
+import Data.Sized.Signed as S
+import Data.Sized.Matrix as M
 import Data.Sized.Ix
 
 -- A signed fixed precision number, with max value m, via n sampled bits.
@@ -10,6 +11,19 @@ import Data.Sized.Ix
 -- We add an extra bit, to represent the *sign*.
 data Sampled m n = Sampled (Signed n) Rational
 --	deriving Show
+
+toMatrix :: (Size n, Enum n) => Sampled m n -> Matrix n Bool
+toMatrix (Sampled sig _) = S.toMatrix sig
+
+fromMatrix :: forall n m . (Size n,  Size m, Enum n) => Matrix n Bool -> Sampled m n
+fromMatrix m = mkSampled (fromIntegral scale * fromIntegral val / fromIntegral precision)
+   where val :: Signed n
+	 val = S.fromMatrix m
+	 scale     :: Integer
+ 	 scale     = fromIntegral (size (undefined :: m))
+ 	 precision :: Integer
+ 	 precision = 2 ^ (fromIntegral (size (undefined :: n) - 1) :: Integer)
+	
 
 mkSampled :: forall n m . (Size n,  Enum n, Size m) => Rational -> Sampled m n
 mkSampled v = Sampled val (fromIntegral scale * fromIntegral val / fromIntegral precision)
