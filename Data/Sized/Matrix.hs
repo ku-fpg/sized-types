@@ -131,6 +131,17 @@ beside
      Matrix (m, left) a -> Matrix (m, right) a -> Matrix (m, both) a
 beside m1 m2 = transpose (transpose m1 `above` transpose m2)
 
+-- | append two 1-d matrixes
+append ::
+     (Size left,
+      Size right,
+      Size both
+     , ADD left right ~ both
+     , SUB both left ~ right
+     , SUB both right ~ left
+     ) => Matrix left a -> Matrix right a -> Matrix both a
+append m1 m2 = fromList (toList m1 ++ toList m2)
+
 -- | look at a matrix through a lens to another matrix.
 ixmap :: (Size i, Size j) => (i -> j) -> Matrix j a -> Matrix i a
 ixmap f m = (\ i -> m ! f i) <$> coord
