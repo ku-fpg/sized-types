@@ -358,7 +358,7 @@ instance Size a => Bounded (X1_ a) where
 
 instance Real (X1_ a) where
 instance (Size (X1_ a), Integral a) => Integral (X1_ a) where		
-	toInteger a = toInteger (size a)
+	toInteger (X1_ a) = toInteger a
 
 type instance Index (X1_ a)  = Int
 type instance Row (X1_ a)    = X1
@@ -388,7 +388,7 @@ instance Size a => Size (X0_ a) where
 	
 instance Real (X0_ a) where
 instance (Size (X0_ a), Integral a) => Integral (X0_ a) where		
-	toInteger a = toInteger (size a)
+	toInteger (X0_ a) = toInteger a
 ------
 
 type X1 = X1_ X0

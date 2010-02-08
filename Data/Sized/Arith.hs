@@ -39,6 +39,7 @@ type instance ADD (X1_ a) X0 = APP1 a				-- MIR
 type instance ADD (X1_ a) (X0_ b) = APP1 (ADD a b)		-- MIR
 type instance ADD (X1_ a) (X1_ b) = APP0 (SUCC (ADD a b))
 
+
 type family NOT a
 type instance NOT N1 = X0
 type instance NOT X0 = N1
@@ -60,6 +61,12 @@ type instance SUCC X0 = X1_ X0
 type instance SUCC (X0_ a) = APP1 a
 type instance SUCC (X1_ a) = APP0 (SUCC a)
 
+
+type family LOG a
+type instance LOG X0 = X0
+type instance LOG (X0_ a) = ADD (X1_ X0) (LOG a)
+type instance LOG (X1_ a) = ADD (X1_ X0) (LOG a)
+
 type family APP1 a
 type instance APP1 N1 = N1
 type instance APP1 X0 = X1_ X0
@@ -73,8 +80,6 @@ type instance APP0 (X0_ a) = X0_ (X0_ a)
 type instance APP0 (X1_ a) = X0_ (X1_ a)
 
 --- instances
-
-
 instance Eq (X0_ a) where
 	(X0_ a) == (X0_ b) = a == b
 
