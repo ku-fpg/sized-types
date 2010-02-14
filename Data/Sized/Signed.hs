@@ -42,7 +42,7 @@ fromMatrix m = mkSigned $
 mkSigned :: forall ix . (Size ix) => Integer -> Signed ix
 mkSigned v = res
    where sz' = 2 ^ (fromIntegral bitCount :: Integer)
-	 bitCount = size (error "mkUnsigned" :: ix)
+	 bitCount = size (error "mkUnsigned" :: ix) - 1
 	 res = case divMod v sz' of
 	  	(s,v') | even s    -> Signed v' 
 		       | otherwise -> Signed (v' - sz') 
