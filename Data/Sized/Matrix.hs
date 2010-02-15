@@ -27,7 +27,7 @@ import Data.Sized.Ix
 -- | A 'Matrix' is an array with the sized determined uniquely by the 
 -- /type/ of the index type, 'ix'. 
 data Matrix ix a = Matrix (Array ix a)
-	deriving Eq
+	deriving (Eq,Ord)
 
 -- | '!' looks up an element in the matrix.
 (!) :: (Size n) => Matrix n a -> n -> a
