@@ -342,7 +342,7 @@ type instance Column X0 = X0
 
 instance Size X0 where
 	size _ = 0
-	addIndex X0 _n = X0	-- TODO: fix bounds issues
+	addIndex X0 _n = X0
 	toIndex X0 = 0
 	seeIn2D (_,y) = y
 
@@ -356,8 +356,8 @@ instance Size a => Bounded (X1_ a) where
 	minBound = X1_ 0
 	maxBound = let a = X1_ (size a - 1) in a
 
-instance Real (X1_ a) where
-instance (Size (X1_ a), Integral a) => Integral (X1_ a) where		
+instance (Size a) => Real (X1_ a) where
+instance (Size a, Size (X1_ a), Integral a) => Integral (X1_ a) where		
 	toInteger (X1_ a) = toInteger a
 
 type instance Index (X1_ a)  = Int
@@ -367,7 +367,7 @@ type instance Column (X1_ a) = X1_ a
 instance Size a => Size (X1_ a) where
 	size = const s
 	  where s = 2 * size (undefined :: a) + 1
-	addIndex (X1_ v) n = X1_ (v + n)	-- fix bounds issues
+	addIndex (X1_ v) n = mkX1_ (v + n)	-- fix bounds issues
 	toIndex (X1_ v) = v
 	seeIn2D (_,y) = y
 
@@ -382,13 +382,84 @@ instance Size a => Bounded (X0_ a) where
 instance Size a => Size (X0_ a) where
 	size = const s
 	  where s = 2 * size (undefined :: a) 
-	addIndex (X0_ v) n = X0_ (v + n)	-- fix bounds issues
+	addIndex (X0_ v) n = mkX0_ (v + n)	-- fix bounds issues
 	toIndex (X0_ v) = v
 	seeIn2D (_,y) = y
 	
-instance Real (X0_ a) where
-instance (Size (X0_ a), Integral a) => Integral (X0_ a) where		
+instance (Size a) => Real (X0_ a) where
+instance (Size a, Size (X0_ a), Integral a) => Integral (X0_ a) where		
 	toInteger (X0_ a) = toInteger a
+
+
+--- instances
+instance Eq (X0_ a) where
+	(X0_ a) == (X0_ b) = a == b
+
+instance Ord (X0_ a) where
+	(X0_ a) `compare` (X0_ b) = a `compare` b
+
+
+instance (Size a) => Ix (X0_ a) where
+	range (X0_ a,X0_ b) = map mkX0_ (range (a,b))
+	index (X0_ a,X0_ b) (X0_ i) = index (a,b) i
+	inRange (X0_ a,X0_ b) (X0_ i) = inRange (a,b) i
+
+instance (Size a) => Enum (X0_ a) where
+	toEnum n = mkX0_ n
+	fromEnum (X0_ n) = n
+
+instance (Size a) => Num (X0_ a) where
+	fromInteger n = mkX0_ (fromInteger n)	-- bounds checking needed!
+	abs a = a 
+	signum (X0_ a) = if a == 0 then 0 else 1
+	(X0_ a) + (X0_ b) = mkX0_ (a + b)
+	(X0_ a) - (X0_ b) = mkX0_ (a - b)
+	(X0_ a) * (X0_ b) = mkX0_ (a * b)
+
+
+instance Show (X0_ a) where
+	show (X0_ a) = show a
+	
+instance Eq (X1_ a) where
+	(X1_ a) == (X1_ b) = a == b
+
+instance Ord (X1_ a) where
+	(X1_ a) `compare` (X1_ b) = a `compare` b
+
+instance (Size a) => Ix (X1_ a) where
+	range (X1_ a,X1_ b) = map mkX1_ (range (a,b))
+	index (X1_ a,X1_ b) (X1_ i) = index (a,b) i
+	inRange (X1_ a,X1_ b) (X1_ i) = inRange (a,b) i
+
+instance (Size a) => Enum (X1_ a) where
+	toEnum n = mkX1_ n
+	fromEnum (X1_ n) = n
+
+instance (Size a) => Num (X1_ a) where
+	fromInteger n = mkX1_ (fromInteger n)	-- bounds checking needed!
+	abs a = a 
+	signum (X1_ a) = if a == 0 then 0 else 1
+	(X1_ a) + (X1_ b) = mkX1_ (a + b)
+	(X1_ a) - (X1_ b) = mkX1_ (a - b)
+	(X1_ a) * (X1_ b) = mkX1_ (a * b)
+
+instance Show (X1_ a) where
+	show (X1_ a) = show a
+
+instance Bounded X0 where
+	minBound = error "minBound not defined"
+	maxBound = error "maxBound not defined"
+
+instance Ix X0 where
+	range (X0,X0) = []
+	inRange (X0,X0) X0 = False
+
+instance Show X0 where
+	show X0 = "-"
+
+mkX0_ n = let r = X0_ (n `mod` size r) in r
+mkX1_ n = let r = X1_ (n `mod` size r) in r
+
 ------
 
 type X1 = X1_ X0
