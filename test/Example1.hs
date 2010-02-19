@@ -22,7 +22,7 @@ main = do
 	print $ example8
 	print $ fmap (\ v -> if v == (0 :: Double)
 		 	     then S "" 
-			     else showAs 3 v) 
+			     else showAsE 3 v) 
 	      $ fmap (fromIntegral) example6 
 	
 	let s :: [Signed X4]

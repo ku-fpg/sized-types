@@ -231,8 +231,11 @@ newtype S = S String
 instance Show S where
 	show (S s) = s
 
-showAs :: (RealFloat a) => Int -> a -> S 
-showAs i a = S $ showEFloat (Just i) a ""
+showAsE :: (RealFloat a) => Int -> a -> S 
+showAsE i a = S $ showEFloat (Just i) a ""
+
+showAsF :: (RealFloat a) => Int -> a -> S 
+showAsF i a = S $ showFFloat (Just i) a ""
 
 scanM :: (Size ix, Bounded ix, Enum ix)
       => ((left,a,right) -> (right,b,left))
