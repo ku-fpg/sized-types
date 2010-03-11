@@ -309,7 +309,7 @@ type instance Row (a,b)  = a
 type instance Column (a,b)  = b
 
 instance (Size x, Size y) => Size (x,y) where
-	size (a,b) = size a * size b
+	size ~(a,b) = size a * size b
 	addIndex (a,b) (a',b') = (addIndex a a',addIndex b b')
 	toIndex (a,b) = (toIndex a, toIndex b)
 	seeIn2D (x,y) = (x,y)

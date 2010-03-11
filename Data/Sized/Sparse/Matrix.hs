@@ -24,14 +24,15 @@ instance Functor (Matrix ix) where
     fmap f (Matrix d mp) = Matrix (f d) (fmap f mp)
 
 -- 'fromAssocList' generates a sparse matrix. 
-fromAssocList :: (Size i, Eq a) => a -> [(i,a)] -> Matrix i a
+fromAssocList :: (Ord i, Eq a) => a -> [(i,a)] -> Matrix i a
 fromAssocList d xs = Matrix d (Map.fromList [ (i,a) | (i,a) <- xs, a /= d ])
 
+toAssocList :: (Matrix i a) -> (a,[(i,a)])
 toAssocList (Matrix d mp) = (d,Map.toList mp)
 
 -- | '!' looks up an element in the sparse matrix. If the element is not found
 -- in the sparse matrix, '!' returns the default value.
-(!) :: (Size ix) => Matrix ix a -> ix -> a
+(!) :: (Ord ix) => Matrix ix a -> ix -> a
 (!) (Matrix d sm) id = Map.findWithDefault d id sm 
 
 fill :: (Size ix) => Matrix ix a -> M.Matrix ix a
