@@ -283,8 +283,8 @@ import Data.Sized.Arith
 -- | A list of all possible indices.
 -- Unlike 'indices' in Matrix, this does not need the 'Matrix'
 -- argument, because the types determine the contents.
-all :: (Size i) => [i]
-all = range (minBound,maxBound)
+all :: forall i . (Size i) => [i]
+all = if size (error "all witness" :: i) == 0 then [] else range (minBound,maxBound)
 
 --- because of TH's lack of type families, will be added later.
 type family Index a
@@ -447,8 +447,8 @@ instance Show (X1_ a) where
 	show (X1_ a) = show a
 
 instance Bounded X0 where
-	minBound = error "minBound not defined"
-	maxBound = error "maxBound not defined"
+	minBound = error "minBound not defined for X0"
+	maxBound = error "maxBound not defined for X0"
 
 instance Ix X0 where
 	range (X0,X0) = []

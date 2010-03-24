@@ -7,7 +7,7 @@
 -- Stability: unstable
 -- Portability: ghc
 
-{-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, UndecidableInstances, MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, ScopedTypeVariables, UndecidableInstances, MultiParamTypeClasses #-}
 module Data.Sized.Matrix 
 	( module Data.Sized.Matrix
 	, module Data.Sized.Ix
@@ -27,29 +27,39 @@ import Data.Sized.Ix
 -- | A 'Matrix' is an array with the sized determined uniquely by the 
 -- /type/ of the index type, 'ix'. 
 data Matrix ix a = Matrix (Array ix a)
+		 | NullMatrix		-- consider using Int as index, and keeping ix as phantom,
+					-- instead of this NullMatrix.
 	deriving (Eq,Ord)
 
 -- | '!' looks up an element in the matrix.
 (!) :: (Size n) => Matrix n a -> n -> a
 (!) (Matrix xs) n = xs A.! n
+(!) NullMatrix _ = error "Attending to index into a Null Matrix, should *never* happen"
 
 instance (Size i) => Functor (Matrix i) where
 	fmap f (Matrix xs) = Matrix (fmap f xs)
+	fmap f NullMatrix = NullMatrix
 
 -- | 'toList' turns a matrix into an always finite list.
 toList :: (Size i) => Matrix i a -> [a]
 toList (Matrix a) = elems a
+toList NullMatrix = []
 
 -- | 'fromList' turns a finite list into a matrix. You often need to give the type of the result.
-fromList :: (Size i) => [a] -> Matrix i a
-fromList xs = check minBound maxBound
-    where 
-	check low high | size low == L.length xs
-		       = Matrix $ listArray (low,high) xs
-		       | otherwise
-		       = error $ "bad length of fromList for Matrix, "
-			      ++ "expecting " ++ show (L.length (range (low,high))) ++ " elements"
+fromList :: forall i a . (Size i) => [a] -> Matrix i a
+fromList xs | size witness == 0 = NullMatrix
+	    | size witness == L.length xs = Matrix $ listArray (low,high) xs
+	    | otherwise =  error $ "bad length of fromList for Matrix, "
+			      ++ "expecting " ++ show (size witness) ++ " elements"
 			      ++ ", found " ++ show (L.length xs) ++ " elements."
+
+    where 
+	witness :: i
+	witness = undefined
+  	low :: i
+	low = minBound
+	high :: i
+	high = maxBound
 
 -- | 'matrix' turns a finite list into a matrix. You often need to give the type of the result.
 matrix :: (Size i) => [a] -> Matrix i a
@@ -209,12 +219,13 @@ instance (Size ix) => F.Foldable (Matrix ix) where
 -- >
 
 showMatrix :: (Size n, Size m) => Matrix (m, n) String -> String
-showMatrix m = joinLines $ map showRow m_rows
+showMatrix m = (joinLines $ map showRow m_rows)
 	where
 		m'	    = forEach m $ \ (x,y) a -> (x == maxBound && y == maxBound,a)
-		joinLines   = unlines . L.zipWith (++) ("[":repeat " ") 
+		joinLines   = unlines . addTail . L.zipWith (++) ("[":repeat " ") 
+		addTail xs  = init xs ++ [last xs ++ " ]"]
 		showRow	r   = concat (toList $ Data.Sized.Matrix.zipWith showEle r m_cols_size)
-		showEle (f,str) s = take (s - L.length str) (cycle " ") ++ " " ++ str ++ (if f then " ]" else ",")
+		showEle (f,str) s = take (s - L.length str) (cycle " ") ++ " " ++ str ++ (if f then "" else ",")
 		m_cols      = columns m
 		m_rows      = toList $ rows m'
 		m_cols_size = fmap (maximum . map L.length . toList) m_cols
