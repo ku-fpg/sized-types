@@ -29,7 +29,7 @@ Library
        Data.Sized.Vector,
        Data.Sized.Sampled
 
-  Ghc-Options:  -Wall
+  Ghc-Options:  -Wall -O2
 
 Executable sized-types-test1
     if flag(all)
