@@ -12,7 +12,7 @@ import Data.Sized.Ix
 data Sampled m n = Sampled (Signed n) Rational
 --	deriving Show
 
-toMatrix :: (Size n, Enum n) => Sampled m n -> Matrix n Bool
+toMatrix :: (Size n) => Sampled m n -> Matrix n Bool
 toMatrix (Sampled sig _) = S.toMatrix sig
 
 fromMatrix :: forall n m . (Size n, Size m) => Matrix n Bool -> Sampled m n
