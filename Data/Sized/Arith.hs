@@ -23,21 +23,24 @@ data X1_ a = X1_ Int		-- times 2 plus 1
 
 type family ADD a b
 type instance ADD N1 N1 = APP0 N1
-type instance ADD N1 X0 = N1
+--type instance ADD N1 X0 = N1
 type instance ADD N1 (X0_ b) = APP1 (ADD N1 b)
 type instance ADD N1 (X1_ b) = APP0 b
 type instance ADD X0 N1 = N1					-- MIR
-type instance ADD X0 X0 = X0
-type instance ADD X0 (X0_ b) = X0_ b
-type instance ADD X0 (X1_ b) = APP1 b
+--type instance ADD X0 X0 = X0
+--type instance ADD X0 (X0_ b) = X0_ b
+--type instance ADD X0 (X1_ b) = APP1 b
 type instance ADD (X0_ a) N1 = APP1 (ADD a N1)			-- MIR
-type instance ADD (X0_ a) X0 = APP0 a				-- MIR
+--type instance ADD (X0_ a) X0 = APP0 a				-- MIR
 type instance ADD (X0_ a) (X0_ b) = APP0 (ADD a b)
 type instance ADD (X0_ a) (X1_ b) = APP1 (ADD a b)
 type instance ADD (X1_ a) N1 = APP0 a				-- MIR
-type instance ADD (X1_ a) X0 = APP1 a				-- MIR
+--type instance ADD (X1_ a) X0 = APP1 a				-- MIR
 type instance ADD (X1_ a) (X0_ b) = APP1 (ADD a b)		-- MIR
 type instance ADD (X1_ a) (X1_ b) = APP0 (SUCC (ADD a b))
+
+type instance ADD a X0 = a
+type instance ADD X0 a = a
 
 
 type family NOT a

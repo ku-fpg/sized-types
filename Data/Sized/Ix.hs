@@ -269,8 +269,8 @@ module Data.Sized.Ix
 	, Size(..)
 	, all
 	, Index
-	, Row
-	, Column
+--	, Row
+--	, Column
 	, coerceSize
 	, ADD
 	, SUB
@@ -288,8 +288,8 @@ all = if size (error "all witness" :: i) == 0 then [] else range (minBound,maxBo
 
 --- because of TH's lack of type families, will be added later.
 type family Index a
-type family Row a
-type family Column a
+--type family Row a
+--type family Column a
 
 class (Eq ix, Ord ix, Show ix, Ix ix, Bounded ix) => Size ix where
 	-- | return the size (number of possible elements) in type 'ix'.
@@ -298,21 +298,16 @@ class (Eq ix, Ord ix, Show ix, Ix ix, Bounded ix) => Size ix where
 	addIndex :: ix -> Index ix -> ix
 	-- | look at an 'ix' as an 'Index', typically just an 'Int'.
 	toIndex  :: ix -> Index ix
-	-- | project any 2D array position onto any array. Helper method for 'show'.
-	seeIn2D	 :: (Row ix, Column ix) -> ix
-
-	-- TO CONSIDER: ADDing a zero method? This will allow coerseSize to 
-	-- work in 2D, and drop the Enum requrement.
 
 type instance Index (a,b) = (Index a,Index b)
-type instance Row (a,b)  = a
-type instance Column (a,b)  = b
+--type instance Row (a,b)  = a
+--type instance Column (a,b)  = b
 
 instance (Size x, Size y) => Size (x,y) where
 	size ~(a,b) = size a * size b
 	addIndex (a,b) (a',b') = (addIndex a a',addIndex b b')
 	toIndex (a,b) = (toIndex a, toIndex b)
-	seeIn2D (x,y) = (x,y)
+--	seeIn2D (x,y) = (x,y)
 	
 type instance Index (a,b,c) = (Index a,Index b,Index c)
 -- type instance Row (a,b,c)  = a
@@ -322,7 +317,7 @@ instance (Size x, Size y, Size z) => Size (x,y,z) where
 	size (a,b,c) = size a * size b * size c
 	addIndex (a,b,c) (a',b',c') = (addIndex a a',addIndex b b',addIndex c c')
 	toIndex (a,b,c) = (toIndex a, toIndex b,toIndex c)
-	seeIn2D (_a,_b) = error "Can not display 3D matrix in 2D"
+--	seeIn2D (_a,_b) = error "Can not display 3D matrix in 2D"
 	
 type instance Index (a,b,c,d) = (Index a,Index b,Index c,Index d)
 
@@ -330,21 +325,21 @@ instance (Size x, Size y, Size z,Size z2) => Size (x,y,z,z2) where
 	size (a,b,c,d) = size a * size b * size c * size d
 	addIndex (a,b,c,d) (a',b',c',d') = (addIndex a a',addIndex b b',addIndex c c',addIndex d d')
 	toIndex (a,b,c,d) = (toIndex a, toIndex b,toIndex c,toIndex d)
-	seeIn2D (_a,_b) = error "Can not display 4D matrix in 2D"
+--	seeIn2D (_a,_b) = error "Can not display 4D matrix in 2D"
 
 -- | A good way of converting from one index type to another index type, typically in another base.
 coerceSize :: (Index ix1 ~ Index ix2, Size ix1, Size ix2, Num ix2) => ix1 -> ix2
 coerceSize ix = addIndex 0 (toIndex ix)
 
 type instance Index X0  = Int
-type instance Row X0    = X1
-type instance Column X0 = X0
+--type instance Row X0    = X1
+--type instance Column X0 = X0
 
 instance Size X0 where
 	size _ = 0
 	addIndex X0 _n = X0
 	toIndex X0 = 0
-	seeIn2D (_,y) = y
+--	seeIn2D (_,y) = y
 
 instance Integral X0 where		
 	toInteger a = toInteger (size a)
@@ -361,19 +356,19 @@ instance (Size a, Size (X1_ a), Integral a) => Integral (X1_ a) where
 	toInteger (X1_ a) = toInteger a
 
 type instance Index (X1_ a)  = Int
-type instance Row (X1_ a)    = X1
-type instance Column (X1_ a) = X1_ a
+--type instance Row (X1_ a)    = X1
+--type instance Column (X1_ a) = X1_ a
 
 instance Size a => Size (X1_ a) where
 	size = const s
 	  where s = 2 * size (undefined :: a) + 1
 	addIndex (X1_ v) n = mkX1_ (v + n)	-- fix bounds issues
 	toIndex (X1_ v) = v
-	seeIn2D (_,y) = y
+--	seeIn2D (_,y) = y
 
 type instance Index (X0_ a)  = Int
-type instance Row (X0_ a)    = X1
-type instance Column (X0_ a) = X0_ a
+--type instance Row (X0_ a)    = X1
+--type instance Column (X0_ a) = X0_ a
 
 instance Size a => Bounded (X0_ a) where
 	minBound = X0_ 0
@@ -384,7 +379,7 @@ instance Size a => Size (X0_ a) where
 	  where s = 2 * size (undefined :: a) 
 	addIndex (X0_ v) n = mkX0_ (v + n)	-- fix bounds issues
 	toIndex (X0_ v) = v
-	seeIn2D (_,y) = y
+--	seeIn2D (_,y) = y
 	
 instance (Size a) => Real (X0_ a) where
 instance (Size a, Size (X0_ a), Integral a) => Integral (X0_ a) where		

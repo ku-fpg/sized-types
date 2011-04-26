@@ -231,8 +231,8 @@ showMatrix m = (joinLines $ map showRow m_rows)
 		m_cols_size = fmap (maximum . map L.length . toList) m_cols
 
 
-instance (Show a, Size ix,Size (Row ix), Size (Column ix)) => Show (Matrix ix a) where
-	show = showMatrix . fmap show . ixmap seeIn2D 
+instance (Show a, Size ix) => Show (Matrix ix a) where
+	show = showMatrix . fmap show . unitRow
 
 -- | 'S' is shown as the contents, without the quotes.
 -- One use is a matrix of S, so that you can do show-style functions

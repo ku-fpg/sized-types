@@ -81,7 +81,7 @@ instance (Size i) => Applicative (Matrix i) where
 		= Matrix (d1 d2) (Map.fromList [ (k,(sm1 ! k) (sm2 ! k)) | k <- Set.toList keys ])
 	    where keys = Map.keysSet m1 `Set.union` Map.keysSet m2
 
-instance (Show a, Size ix,Size (Row ix), Size (Column ix)) => Show (Matrix ix a) where
+instance (Show a, Size ix) => Show (Matrix ix a) where
 	show m = show (fill m)
 
 transpose :: (Size x, Size y, Eq a) => Matrix (x,y) a -> Matrix (y,x) a
