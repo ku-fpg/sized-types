@@ -18,8 +18,8 @@ data N1
 data X0 = X0
 	deriving (Eq,Ord)
 
-data X0_ a = X0_ Int		-- times 2 plus 0
-data X1_ a = X1_ Int		-- times 2 plus 1
+data X0_ a = X0_ Integer	-- times 2 plus 0
+data X1_ a = X1_ Integer	-- times 2 plus 1
 
 type family ADD a b
 type instance ADD N1 N1 = APP0 N1

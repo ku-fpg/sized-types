@@ -349,7 +349,7 @@ instance Num X0 where
 
 instance Size a => Bounded (X1_ a) where
 	minBound = X1_ 0
-	maxBound = let a = X1_ (size a - 1) in a
+	maxBound = let a = X1_ (fromIntegral (size a) - 1) in a
 
 instance (Size a) => Real (X1_ a) where
 instance (Size a, Size (X1_ a), Integral a) => Integral (X1_ a) where		
@@ -362,8 +362,8 @@ type instance Index (X1_ a)  = Int
 instance Size a => Size (X1_ a) where
 	size = const s
 	  where s = 2 * size (undefined :: a) + 1
-	addIndex (X1_ v) n = mkX1_ (v + n)	-- fix bounds issues
-	toIndex (X1_ v) = v
+	addIndex (X1_ v) n = mkX1_ (v + fromIntegral n)	-- fix bounds issues
+	toIndex (X1_ v) = fromIntegral v
 --	seeIn2D (_,y) = y
 
 type instance Index (X0_ a)  = Int
@@ -372,18 +372,18 @@ type instance Index (X0_ a)  = Int
 
 instance Size a => Bounded (X0_ a) where
 	minBound = X0_ 0
-	maxBound = let a = X0_ (size a - 1) in a
+	maxBound = let a = X0_ (fromIntegral (size a) - 1) in a
 
 instance Size a => Size (X0_ a) where
 	size = const s
 	  where s = 2 * size (undefined :: a) 
-	addIndex (X0_ v) n = mkX0_ (v + n)	-- fix bounds issues
-	toIndex (X0_ v) = v
+	addIndex (X0_ v) n = mkX0_ (v + fromIntegral n)	-- fix bounds issues
+	toIndex (X0_ v) = fromIntegral v
 --	seeIn2D (_,y) = y
 	
 instance (Size a) => Real (X0_ a) where
 instance (Size a, Size (X0_ a), Integral a) => Integral (X0_ a) where		
-	toInteger (X0_ a) = toInteger a
+	toInteger (X0_ a) = a
 
 
 --- instances
@@ -400,8 +400,8 @@ instance (Size a) => Ix (X0_ a) where
 	inRange (X0_ a,X0_ b) (X0_ i) = inRange (a,b) i
 
 instance (Size a) => Enum (X0_ a) where
-	toEnum n = mkX0_ n
-	fromEnum (X0_ n) = n
+	toEnum n = mkX0_ (fromIntegral n)
+	fromEnum (X0_ n) = fromIntegral n
 
 instance (Size a) => Num (X0_ a) where
 	fromInteger n = mkX0_ (fromInteger n)	-- bounds checking needed!
@@ -422,13 +422,13 @@ instance Ord (X1_ a) where
 	(X1_ a) `compare` (X1_ b) = a `compare` b
 
 instance (Size a) => Ix (X1_ a) where
-	range (X1_ a,X1_ b) = map mkX1_ (range (a,b))
+	range (X1_ a,X1_ b) = map (mkX1_ . fromIntegral) (range (a,b))
 	index (X1_ a,X1_ b) (X1_ i) = index (a,b) i
 	inRange (X1_ a,X1_ b) (X1_ i) = inRange (a,b) i
 
 instance (Size a) => Enum (X1_ a) where
-	toEnum n = mkX1_ n
-	fromEnum (X1_ n) = n
+	toEnum n = mkX1_ (fromIntegral n)
+	fromEnum (X1_ n) = fromIntegral n
 
 instance (Size a) => Num (X1_ a) where
 	fromInteger n = mkX1_ (fromInteger n)	-- bounds checking needed!
@@ -452,9 +452,21 @@ instance Ix X0 where
 instance Show X0 where
 	show X0 = "-"
 
-mkX0_ n = let r = X0_ (n `mod` size r) in r
-mkX1_ n = let r = X1_ (n `mod` size r) in r
+mkX0_ :: Size a => Integer -> X0_ a
+mkX0_ n | n < 0  = error $ "out of range: ((" ++ show n ++ ") :: X" ++ show s ++ ") < 0"
+	| n >= s = error $ "out of range: (" ++ show n ++ " :: X" ++ show s ++ ") >= " ++ show s
+	| otherwise = r
+   where
+	r = X0_ n
+	s = fromIntegral (size r)
 
+mkX1_ :: Size a => Integer -> X1_ a
+mkX1_ n | n < 0  = error $ "out of range: ((" ++ show n ++ ") :: X" ++ show s ++ ") < 0"
+	| n >= s = error $ "out of range: (" ++ show n ++ " :: X" ++ show s ++ ") >= " ++ show s
+	| otherwise = r
+   where
+	r = X1_ n
+	s = fromIntegral (size r)
 ------
 
 type X1 = X1_ X0
