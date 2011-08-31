@@ -452,19 +452,21 @@ instance Ix X0 where
 instance Show X0 where
 	show X0 = "-"
 
-mkX0_ :: Size a => Integer -> X0_ a
+mkX0_ :: forall a . Size a => Integer -> X0_ a
 mkX0_ n | n < 0  = error $ "out of range: ((" ++ show n ++ ") :: X" ++ show s ++ ") < 0"
 	| n >= s = error $ "out of range: (" ++ show n ++ " :: X" ++ show s ++ ") >= " ++ show s
 	| otherwise = r
    where
+	r :: X0_ a
 	r = X0_ n
 	s = fromIntegral (size r)
 
-mkX1_ :: Size a => Integer -> X1_ a
+mkX1_ :: forall a . Size a => Integer -> X1_ a
 mkX1_ n | n < 0  = error $ "out of range: ((" ++ show n ++ ") :: X" ++ show s ++ ") < 0"
 	| n >= s = error $ "out of range: (" ++ show n ++ " :: X" ++ show s ++ ") >= " ++ show s
 	| otherwise = r
    where
+	r :: X1_ a
 	r = X1_ n
 	s = fromIntegral (size r)
 ------
