@@ -76,9 +76,11 @@ length = size . zeroOf
 -- | 'assocs' extracts the index/value pairs.
 assocs :: (Size i) => Matrix i a -> [(i,a)]
 assocs (Matrix a) = A.assocs a
+assocs NullMatrix = []
 
 (//) :: (Size i) => Matrix i e -> [(i, e)] -> Matrix i e
 (//) (Matrix arr) ixs = Matrix (arr A.// ixs)
+(//) (NullMatrix) _   = NullMatrix
 
 accum :: (Size i) => (e -> a -> e) -> Matrix i e -> [(i, a)] -> Matrix i e
 accum f (Matrix arr) ixs = Matrix (A.accum f arr ixs)
