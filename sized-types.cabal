@@ -1,5 +1,5 @@
 Name:                sized-types
-Version:             0.3.2.20110831
+Version:             0.3.4.0
 Synopsis:            Sized types in Haskell.
 Description:         Providing indices, matrixes, sparse matrixes, and signed and unsigned bit vectors.
 Category:            Language
@@ -8,14 +8,14 @@ License-file:        LICENSE
 Author:              Andy Gill, Tristan Bull
 Maintainer:          Andy Gill <andygill@ku.edu>
 Copyright:           (c) 2009 The University of Kansas
-Homepage:            http://ittc.ku.edu/~andygill/sized-types.php
-Stability:	     alpha
+Homepage:            http://www.ittc.ku.edu/csdl/fpg/Tools
+Stability:	     beta
 build-type: 	     Simple
 Cabal-Version:       >= 1.6
 
 Flag all
   Description: Enable full development tree
-  Default:     True
+  Default:     False
 
 Library
   Build-Depends: base >= 4 && < 5, containers, array
