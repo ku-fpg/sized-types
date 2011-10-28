@@ -353,6 +353,8 @@ instance Size a => Bounded (X1_ a) where
 
 instance (Size a) => Real (X1_ a) where
 instance (Size a, Size (X1_ a), Integral a) => Integral (X1_ a) where		
+        quotRem (X1_ a) (X1_ b) = (X1_ (a `quot` b),X1_ (a `rem` b))
+        divMod  (X1_ a) (X1_ b) = (X1_ (a `div` b),X1_ (a `mod` b))
 	toInteger (X1_ a) = toInteger a
 
 type instance Index (X1_ a)  = Int
@@ -383,6 +385,8 @@ instance Size a => Size (X0_ a) where
 	
 instance (Size a) => Real (X0_ a) where
 instance (Size a, Size (X0_ a), Integral a) => Integral (X0_ a) where		
+        quotRem (X0_ a) (X0_ b) = (X0_ (a `quot` b),X0_ (a `rem` b))
+        divMod  (X0_ a) (X0_ b) = (X0_ (a `div` b),X0_ (a `mod` b))
 	toInteger (X0_ a) = a
 
 
