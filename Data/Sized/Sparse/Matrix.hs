@@ -33,7 +33,7 @@ toAssocList (Matrix d mp) = (d,Map.toList mp)
 -- | '!' looks up an element in the sparse matrix. If the element is not found
 -- in the sparse matrix, '!' returns the default value.
 (!) :: (Ord ix) => Matrix ix a -> ix -> a
-(!) (Matrix d sm) id = Map.findWithDefault d id sm 
+(!) (Matrix d sm) ix = Map.findWithDefault d ix sm 
 
 fill :: (Size ix) => Matrix ix a -> M.Matrix ix a
 fill sm = M.forAll $ \ i -> sm ! i
@@ -47,11 +47,6 @@ prune d sm@(Matrix d' m) | d == d'   = Matrix d (Map.filter (/= d) m)
 sparse :: (Size ix, Eq a) => a -> M.Matrix ix a -> Matrix ix a
 sparse d other = Matrix d (Map.fromList [ (i,v) | (i,v) <- M.assocs other, v /= d ])
 
-foldb1 f [x] = x
-foldb1 f xs = foldb1 f (take len_before xs) `f` foldb1 f (drop len_before xs)
-  where len = length xs
-	len_before = len `div` 2
-
 mm :: (Size m, Size n, Size m', Size n', n ~ m', Num a) => Matrix (m,n) a -> Matrix (m',n') a -> Matrix (m,n') a
 mm s1 s2 = Matrix 0 mp
   where
@@ -62,15 +57,22 @@ mm s1 s2 = Matrix 0 mp
 			, let v = foldb1 (+) [ s1 ! (x,k) * s2 ! (k,y) | k <- Set.toList s ]
 			, v /= 0
 			] 
-	sm1@(Matrix _ mp1) = prune 0 s1
-	sm2@(Matrix _ mp2) = prune 0 s2
+	(Matrix _ mp1) = prune 0 s1
+	(Matrix _ mp2) = prune 0 s2
 	rs = rowSets    (Map.keysSet mp1)
 	cs = columnSets (Map.keysSet mp2)
+
+	foldb1 _ [x] = x
+	foldb1 f xs = foldb1 f (take len_before xs) `f` foldb1 f (drop len_before xs)
+	  where len = length xs
+	  	len_before = len `div` 2
+
+
 
 rowSets :: (Size a, Ord b) => Set (a,b) -> M.Matrix a (Set b)
 rowSets set = M.accum f (pure Set.empty) (Set.toList set)
    where
-	f set e = Set.insert e set
+	f set' e = Set.insert e set'
 	
 columnSets :: (Size b, Ord a) => Set (a,b) -> M.Matrix b (Set a)
 columnSets = rowSets . Set.map (\ (a,b) -> (b,a))
@@ -86,12 +88,6 @@ instance (Show a, Size ix) => Show (Matrix ix a) where
 
 transpose :: (Size x, Size y, Eq a) => Matrix (x,y) a -> Matrix (y,x) a
 transpose (Matrix d m) = Matrix d (Map.fromList [ ((y,x),a) | ((x,y),a) <- Map.assocs m ])
-
-m1 = M.matrix [1..6] :: M.Matrix (X2,X3) Int
-m2 = M.matrix [1..12] :: M.Matrix (X3,X4) Int
-m3 = m1 `M.mm` m2
-m4 = M.identity :: M.Matrix (X200,X200) Int
-
 
 zipWith :: (Size x) => (a -> b -> c) -> Matrix x a -> Matrix x b -> Matrix x c
 zipWith f m1 m2 = pure f <*> m1 <*> m2 
