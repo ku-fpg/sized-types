@@ -51,7 +51,7 @@ example4 = coord
 
 -- also works in 2D
 example5 :: Matrix X6 Bool
-example5 = forAll $ \ i -> i > 6
+example5 = forAll $ \ i -> i > 3
 
 example6 :: Matrix (X3,X4) Int
 example6 = forEach example2 $ \ (i,j) a -> 
