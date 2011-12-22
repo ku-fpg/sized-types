@@ -21,14 +21,13 @@ module Data.Sized.Unsigned
 
 import Data.Sized.Matrix as M
 import Data.Sized.Ix
-import Data.List as L
 import Data.Bits
 import Data.Ix
 
 newtype Unsigned ix = Unsigned Integer
 
 toMatrix :: forall ix . (Size ix) => Unsigned ix -> Matrix ix Bool
-toMatrix s@(Unsigned v) = matrix $ take (size (error "toMatrix" :: ix)) $ map odd $ iterate (`div` 2) v
+toMatrix (Unsigned v) = matrix $ take (size (error "toMatrix" :: ix)) $ map odd $ iterate (`div` 2) v
 
 fromMatrix :: (Size ix) => Matrix ix Bool -> Unsigned ix
 fromMatrix m = mkUnsigned $
