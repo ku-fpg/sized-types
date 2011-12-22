@@ -1,7 +1,7 @@
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, TypeFamilies #-}
 
 -- | Unsigned, fixed sized numbers.
--- 
+--
 -- Copyright: (c) 2009 University of Kansas
 -- License: BSD3
 --
@@ -9,7 +9,7 @@
 -- Stability: unstable
 -- Portability: ghc
 
-module Data.Sized.Unsigned 
+module Data.Sized.Unsigned
 	( Unsigned
 	, toMatrix
 	, fromMatrix
@@ -18,20 +18,21 @@ module Data.Sized.Unsigned
 	, U20, U21, U22, U23, U24, U25, U26, U27, U28, U29
 	, U30, U31, U32
 	) where
-	
+
 import Data.Sized.Matrix as M
 import Data.Sized.Ix
 import Data.List as L
 import Data.Bits
+import Data.Ix
 
-newtype Unsigned ix = Unsigned Integer 
+newtype Unsigned ix = Unsigned Integer
 
 toMatrix :: forall ix . (Size ix) => Unsigned ix -> Matrix ix Bool
 toMatrix s@(Unsigned v) = matrix $ take (size (error "toMatrix" :: ix)) $ map odd $ iterate (`div` 2) v
 
 fromMatrix :: (Size ix) => Matrix ix Bool -> Unsigned ix
 fromMatrix m = mkUnsigned $
-	  sum [ n	
+	  sum [ n
 	      | (n,b) <- zip (iterate (* 2) 1)
 			      (M.toList m)
 	      , b
@@ -53,7 +54,7 @@ instance (Size ix) => Read (Unsigned ix) where
 	readsPrec i str = [ (mkUnsigned a,r) | (a,r) <- readsPrec i str ]
 instance (Size ix) => Integral (Unsigned ix) where
   	toInteger (Unsigned m) = m
-	quotRem (Unsigned a) (Unsigned b) = 
+	quotRem (Unsigned a) (Unsigned b) =
 		case quotRem a b of
 		   (q,r) -> (mkUnsigned q,mkUnsigned r)
 instance (Size ix) => Num (Unsigned ix) where
@@ -67,7 +68,7 @@ instance (Size ix) => Real (Unsigned ix) where
 	toRational (Unsigned n) = toRational n
 instance (Size ix) => Enum (Unsigned ix) where
 	fromEnum (Unsigned n) = fromEnum n
-	toEnum n = mkUnsigned (toInteger n)	
+	toEnum n = mkUnsigned (toInteger n)
 instance (Size ix, Integral ix) => Bits (Unsigned ix) where
 	bitSize s = f s undefined
 	  where
@@ -88,6 +89,25 @@ instance (Size ix, Integral ix) => Bits (Unsigned ix) where
 instance forall ix . (Size ix) => Bounded (Unsigned ix) where
 	minBound = Unsigned 0
         maxBound = Unsigned (2 ^ (size (error "Bounded/Unsigned" :: ix)) - 1)
+
+-- Unsigned ix as member of Size class.
+-- We do not address efficiency in this implementation.
+
+type instance Index (Unsigned ix)  = Int
+
+instance forall ix . (Size ix) => Ix (Unsigned ix) where
+    range     (l, u)    = [l .. u]
+    inRange   (l, u) v  =  (l <= v) && (v <= u)
+    index     (l, u) v | inRange (l,u) v = fromIntegral (v - l)
+                       | otherwise       = error "Error in Ix array index"
+    rangeSize (l, u)   | l <= u           = fromIntegral $ (toInteger u) - (toInteger l) + 1
+                       | otherwise       = 0
+
+instance forall ix . (Size ix) => Size (Unsigned ix) where
+    size         = const s
+	where s  = fromIntegral $ toInteger (maxBound :: Unsigned ix) + 1
+    addIndex v n =  v + (fromIntegral n)  -- fix bounds issues
+    toIndex v    = fromIntegral v
 
 -- | common; numerically boolean.
 type U1 = Unsigned X1
