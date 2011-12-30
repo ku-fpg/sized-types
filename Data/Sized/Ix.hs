@@ -299,6 +299,14 @@ class (Eq ix, Ord ix, Show ix, Ix ix, Bounded ix) => Size ix where
 	-- | look at an 'ix' as an 'Index', typically just an 'Int'.
 	toIndex  :: ix -> Index ix
 
+type instance Index () = ()
+
+instance Size () where
+	size () = 1
+	addIndex () () = ()
+	toIndex () = ()
+
+
 type instance Index (a,b) = (Index a,Index b)
 --type instance Row (a,b)  = a
 --type instance Column (a,b)  = b
