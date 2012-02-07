@@ -47,7 +47,7 @@ prune d sm@(Matrix d' m) | d == d'   = Matrix d (Map.filter (/= d) m)
 sparse :: (Size ix, Eq a) => a -> M.Matrix ix a -> Matrix ix a
 sparse d other = Matrix d (Map.fromList [ (i,v) | (i,v) <- M.assocs other, v /= d ])
 
-mm :: (Size m, Size n, Size m', Size n', n ~ m', Num a) => Matrix (m,n) a -> Matrix (m',n') a -> Matrix (m,n') a
+mm :: (Size m, Size n, Size m', Size n', n ~ m', Eq a, Num a) => Matrix (m,n) a -> Matrix (m',n') a -> Matrix (m,n') a
 mm s1 s2 = Matrix 0 mp
   where
 	mp = Map.fromList [ ((x,y),v)
