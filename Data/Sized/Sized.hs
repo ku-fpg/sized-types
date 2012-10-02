@@ -16,7 +16,19 @@ import GHC.TypeLits
 
 data Sized :: Nat -> * where
    Sized :: Integer -> Sized (a :: Nat)
-   Zero  :: Sized 0
+
+class (Bounded i, Ix i) => SizedIx i
+instance (Bounded i, Ix i) => SizedIx i
+
+-- | A list of all possible values of a type.
+universe :: (SizedIx ix) => [ix]
+universe = range (minBound,maxBound)
+
+size :: forall ix . (SizedIx ix) => ix -> Int
+size _ = rangeSize (minBound,maxBound :: ix)
+
+--size :: forall n  . SingI n => Sized n -> Integer
+--size _ =
 
 mkSized :: forall n . SingI n => Integer -> Sized n
 mkSized n | m == 0 = error "<<Sized 0>>"
@@ -61,11 +73,9 @@ instance (SingI a) => Ix (Sized a) where
 
 instance SingI a => Bounded (Sized a) where
    minBound = mkSized 0
-   maxBound = n where n = mkSized (size n - 1)
+   maxBound = n where n = mkSized (fromSing (sing :: Sing a) - 1)
 
 instance Enum (Sized a) where
    fromEnum (Sized n) = fromIntegral n
    toEnum n = Sized (fromIntegral n)
 
-size :: forall n  . SingI n => Sized n -> Integer
-size _ = fromSing (sing :: Sing n)
