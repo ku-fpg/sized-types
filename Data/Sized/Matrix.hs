@@ -1,5 +1,5 @@
 -- | Sized matrixes.
--- 
+--
 -- Copyright: (c) 2009 University of Kansas
 -- License: BSD3
 --
@@ -8,52 +8,49 @@
 -- Portability: ghc
 
 {-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, ScopedTypeVariables, UndecidableInstances, MultiParamTypeClasses #-}
-module Data.Sized.Matrix 
-	( module Data.Sized.Matrix
-	, module Data.Sized.Ix
-	) where
+module Data.Sized.Matrix where
 
 import Data.Array as A hiding (indices,(!), ixmap, assocs)
 import qualified Data.Array as A
 import Prelude as P hiding (all)
 import Control.Applicative
-import qualified Data.Traversable as T
-import qualified Data.Foldable as F
-import qualified Data.List as L 
-import Numeric 
+import qualified Data.Traversable as T hiding (all)
+import qualified Data.Foldable as F hiding (all)
+import qualified Data.List as L hiding (all)
+import Numeric
 
-import Data.Sized.Ix
+import Data.Sized.Sized
 
--- | A 'Matrix' is an array with the sized determined uniquely by the 
--- /type/ of the index type, 'ix'. 
+-- | A 'Matrix' is an array with the sized determined uniquely by the
+-- /type/ of the index type, 'ix', with every type in 'ix' used.
 data Matrix ix a = Matrix (Array ix a)
-		 | NullMatrix		-- consider using Int as index, and keeping ix as phantom,
-					-- instead of this NullMatrix.
-	deriving (Eq,Ord)
+        deriving Show
+
+-- A 'Vector' is a 1D Matrix.
+type Vector ix a = Matrix (Sized ix) a
+
+--	deriving (Eq,Ord)
 
 -- | '!' looks up an element in the matrix.
-(!) :: (Size n) => Matrix n a -> n -> a
+(!) ::  (Ix n) => Matrix n a -> n -> a
 (!) (Matrix xs) n = xs A.! n
-(!) NullMatrix _ = error "Attending to index into a Null Matrix, should *never* happen"
 
-instance (Size i) => Functor (Matrix i) where
+instance (Ix ix) => Functor (Matrix ix) where
 	fmap f (Matrix xs) = Matrix (fmap f xs)
-	fmap f NullMatrix = NullMatrix
 
 -- | 'toList' turns a matrix into an always finite list.
-toList :: (Size i) => Matrix i a -> [a]
+toList :: (Ix i) => Matrix i a -> [a]
 toList (Matrix a) = elems a
-toList NullMatrix = []
 
--- | 'fromList' turns a finite list into a matrix. You often need to give the type of the result.
-fromList :: forall i a . (Size i) => [a] -> Matrix i a
-fromList xs | size witness == 0 = NullMatrix
-	    | size witness == L.length xs = Matrix $ listArray (low,high) xs
-	    | otherwise =  error $ "bad length of fromList for Matrix, "
-			      ++ "expecting " ++ show (size witness) ++ " elements"
+-- | 'fromList' turns a finite list into a 1D matrix. You often need to give the type of the result.
+fromList :: forall i a . (Bounded i,Ix i) => [a] -> Matrix i a
+fromList xs | size == fromIntegral (L.length xs) = Matrix $ listArray (low,high) xs
+	    | otherwise = error $ "bad length of fromList for Matrix, "
+			      ++ "expecting " ++ show size ++ " elements"
 			      ++ ", found " ++ show (L.length xs) ++ " elements."
 
-    where 
+    where
+        size = rangeSize (low,high)
 	witness :: i
 	witness = undefined
   	low :: i
@@ -61,58 +58,62 @@ fromList xs | size witness == 0 = NullMatrix
 	high :: i
 	high = maxBound
 
+
 -- | 'matrix' turns a finite list into a matrix. You often need to give the type of the result.
-matrix :: (Size i) => [a] -> Matrix i a
+matrix :: (Bounded i,Ix i) => [a] -> Matrix i a
 matrix = fromList
 
 -- | 'indices' is a version of 'Data.Sized.Ix.all' that takes a type, for forcing the result type using the Matrix type.
-indices :: (Size i) => Matrix i a -> [i]
-indices _ = all
+indices :: (Bounded i,Ix i) => Matrix i a -> [i]
+indices _ = uni
 
--- | what is the length of a matrix?
-length :: (Size i) => Matrix i a -> Int
-length = size . zeroOf
+-- | A list of all possible values of a type.
+uni :: (Bounded ix, Ix ix) => [ix]
+uni = range (minBound,maxBound)
+
+-- | what is the length of a matrix? Should really be size.
+length :: forall i a . (Bounded i, Ix i) => Matrix i a -> Int
+length _ = rangeSize (minBound :: i,maxBound)
 
 -- | 'assocs' extracts the index/value pairs.
-assocs :: (Size i) => Matrix i a -> [(i,a)]
+assocs :: (Bounded i, Ix i) => Matrix i a -> [(i,a)]
 assocs (Matrix a) = A.assocs a
-assocs NullMatrix = []
 
-(//) :: (Size i) => Matrix i e -> [(i, e)] -> Matrix i e
+(//) :: (Bounded i, Ix i) => Matrix i e -> [(i, e)] -> Matrix i e
 (//) (Matrix arr) ixs = Matrix (arr A.// ixs)
-(//) (NullMatrix) _   = NullMatrix
 
-accum :: (Size i) => (e -> a -> e) -> Matrix i e -> [(i, a)] -> Matrix i e
+accum :: (Bounded i, Ix i) => (e -> a -> e) -> Matrix i e -> [(i, a)] -> Matrix i e
 accum f (Matrix arr) ixs = Matrix (A.accum f arr ixs)
 
 -- | 'zeroOf' is for use to force typing issues, and is 0.
-zeroOf :: (Size i) => Matrix i a -> i
+zeroOf :: (Bounded i, Ix i) => Matrix i a -> i
 zeroOf _ = minBound
 
 -- | 'coord' returns a matrix filled with indexes.
-coord :: (Size i) => Matrix i i
-coord = fromList all
+coord :: (Bounded i, Ix i) => Matrix i i
+coord = fromList uni
 
+{-
 -- | Same as for lists.
-zipWith :: (Size i) => (a -> b -> c) -> Matrix i a -> Matrix i b -> Matrix i c
+zipWith :: (Bounded i, Ix i) => (a -> b -> c) -> Matrix i a -> Matrix i b -> Matrix i c
 zipWith f a b = forAll $ \ i -> f (a ! i) (b ! i)
 
 -- | 'forEach' takes a matrix, and calls a function for each element, to give a new matrix of the same size.
-forEach :: (Size i) => Matrix i a -> (i -> a -> b) -> Matrix i b
+forEach :: (Bounded i, Ix i) => Matrix i a -> (i -> a -> b) -> Matrix i b
 forEach a f = Data.Sized.Matrix.zipWith f coord a
 
 -- | 'forAll' creates a matrix out of a mapping from the coordinates.
-forAll :: (Size i) => (i -> a) -> Matrix i a
+forAll :: (Bounded i, Ix i) => (i -> a) -> Matrix i a
 forAll f = fmap f coord
 
-instance (Size i) => Applicative (Matrix i) where
+instance (Bounded i, Ix i) => Applicative (Matrix i) where
 	pure a = fmap (const a) coord	-- possible because we are a fixed size
 	a <*> b = forAll $ \ i -> (a ! i) (b ! i)
-	
+
 -- | 'mm' is the 2D matrix multiply.
 mm :: (Size m, Size n, Size m', Size n', n ~ m', Num a) => Matrix (m,n) a -> Matrix (m',n') a -> Matrix (m,n') a
 mm a b = forAll $ \ (i,j) -> sum [ a ! (i,r) * b ! (r,j) | r <- all ]
- 
+
 -- | 'transpose' a 2D matrix.
 transpose :: (Size x, Size y) => Matrix (x,y) a -> Matrix (y,x) a
 transpose = ixmap $ \ (x,y) -> (y,x)
@@ -125,8 +126,8 @@ identity = (\ (x,y) -> if x == y then 1 else 0) <$> coord
 above :: (Size m, Size top, Size bottom, Size both
 	 , ADD top bottom ~ both
 	 , SUB both top ~ bottom
-	 , SUB both bottom ~ top 
-	 ) 
+	 , SUB both bottom ~ top
+	 )
       => Matrix (top,m) a -> Matrix (bottom,m) a -> Matrix (both,m) a
 above m1 m2 = fromList (toList m1 ++ toList m2)
 
@@ -155,15 +156,15 @@ append ::
 append m1 m2 = fromList (toList m1 ++ toList m2)
 
 -- | look at a matrix through a lens to another matrix.
-ixmap :: (Size i, Size j) => (i -> j) -> Matrix j a -> Matrix i a
+ixmap :: (Bounded i, Ix i, Size j) => (i -> j) -> Matrix j a -> Matrix i a
 ixmap f m = (\ i -> m ! f i) <$> coord
 
 -- | look at a matrix through a functor lens, to another matrix.
-ixfmap :: (Size i, Size j, Functor f) => (i -> f j) -> Matrix j a -> Matrix i (f a)
+ixfmap :: (Bounded i, Ix i, Size j, Functor f) => (i -> f j) -> Matrix j a -> Matrix i (f a)
 ixfmap f m = (fmap (\ j -> m ! j) . f) <$> coord
 
 -- | grab /part/ of a matrix.
-cropAt :: (Index i ~ Index ix, Size i, Size ix) => Matrix ix a -> ix -> Matrix i a
+cropAt :: (Index i ~ Index ix, Bounded i, Ix i, Bounded i, Ix ix) => Matrix ix a -> ix -> Matrix i a
 cropAt m corner = ixmap (\ i -> (addIndex corner (toIndex i))) m
 
 -- | slice a 2D matrix into rows.
@@ -202,14 +203,14 @@ unColumn = ixmap (\ n -> (n,0))
 squash :: (Size n, Size m) => Matrix m a -> Matrix n a
 squash = fromList . toList
 
-instance (Size ix) => T.Traversable (Matrix ix) where
+instance (Bounded i, Ix ix) => T.Traversable (Matrix ix) where
   traverse f a = matrix <$> (T.traverse f $ toList a)
- 
+
 instance (Size ix) => F.Foldable (Matrix ix) where
   foldMap f m = F.foldMap f (toList m)
 
 -- | 'showMatrix' displays a 2D matrix, and is the worker for 'show'.
--- 
+--
 -- > GHCi> matrix [1..42] :: Matrix (X7,X6) Int
 -- > [  1,  2,  3,  4,  5,  6,
 -- >    7,  8,  9, 10, 11, 12,
@@ -224,7 +225,7 @@ showMatrix :: (Size n, Size m) => Matrix (m, n) String -> String
 showMatrix m = (joinLines $ map showRow m_rows)
 	where
 		m'	    = forEach m $ \ (x,y) a -> (x == maxBound && y == maxBound,a)
-		joinLines   = unlines . addTail . L.zipWith (++) ("[":repeat " ") 
+		joinLines   = unlines . addTail . L.zipWith (++) ("[":repeat " ")
 		addTail xs  = init xs ++ [last xs ++ " ]"]
 		showRow	r   = concat (toList $ Data.Sized.Matrix.zipWith showEle r m_cols_size)
 		showEle (f,str) s = take (s - L.length str) (cycle " ") ++ " " ++ str ++ (if f then "" else ",")
@@ -244,10 +245,10 @@ newtype S = S String
 instance Show S where
 	show (S s) = s
 
-showAsE :: (RealFloat a) => Int -> a -> S 
+showAsE :: (RealFloat a) => Int -> a -> S
 showAsE i a = S $ showEFloat (Just i) a ""
 
-showAsF :: (RealFloat a) => Int -> a -> S 
+showAsF :: (RealFloat a) => Int -> a -> S
 showAsF i a = S $ showFFloat (Just i) a ""
 
 scanM :: (Size ix, Bounded ix, Enum ix)
@@ -275,5 +276,5 @@ scanR :: (Size ix, Bounded ix, Enum ix)
 scanR f (l,m) = ( fst `fmap` tmp, snd (tmp ! maxBound) )
   where tmp = forEach m $ \ i a -> f (prev i,a)
 	prev i = if i == minBound then l else (snd (tmp ! (pred i)))
+-}
 
- 

@@ -10,3 +10,5 @@ runtests::
 clean::
 	rm -Rf run
 	
+start::
+	cabal configure --with-compiler=/Users/andy/git/ghc/ghc/inplace/bin/ghc-stage2
