@@ -20,15 +20,17 @@ data Sized :: Nat -> * where
 class (Bounded i, Ix i) => SizedIx i
 instance (Bounded i, Ix i) => SizedIx i
 
+-- A finite (bounding) corners of an finite indexed entity
+corners :: forall i . (SizedIx i) => (i,i)
+corners = (minBound :: i,maxBound)
+
 -- | A list of all possible values of a type.
 universe :: (SizedIx ix) => [ix]
-universe = range (minBound,maxBound)
+universe = range corners
 
+-- property:length (universe :: [a]) == size a
 size :: forall ix . (SizedIx ix) => ix -> Int
-size _ = rangeSize (minBound,maxBound :: ix)
-
---size :: forall n  . SingI n => Sized n -> Integer
---size _ =
+size _ = rangeSize (corners :: (ix,ix))
 
 mkSized :: forall n . SingI n => Integer -> Sized n
 mkSized n | m == 0 = error "<<Sized 0>>"
