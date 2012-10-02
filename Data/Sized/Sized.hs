@@ -17,8 +17,8 @@ import GHC.TypeLits
 data Sized :: Nat -> * where
    Sized :: Integer -> Sized (a :: Nat)
 
-class (Bounded i, Ix i) => SizedIx i
-instance (Bounded i, Ix i) => SizedIx i
+class    (Bounded i, Ix i) => SizedIx i where {}
+instance (Bounded i, Ix i) => SizedIx i where {}
 
 -- A finite (bounding) corners of an finite indexed entity
 corners :: forall i . (SizedIx i) => (i,i)
@@ -45,7 +45,7 @@ instance Show (Sized a) where
 instance SingI a => Read (Sized a) where
    readsPrec i str0 = [ (mkSized v,str1) | (v,str1) <- readsPrec i str0 ]
 
-instance (SingI a) => Num (Sized a) where
+instance SingI a => Num (Sized a) where
    (Sized a) + (Sized b) = mkSized (a + b)
    (Sized a) * (Sized b) = mkSized (a * b)
    (Sized a) - (Sized b) = mkSized (a - b)
@@ -80,4 +80,16 @@ instance SingI a => Bounded (Sized a) where
 instance Enum (Sized a) where
    fromEnum (Sized n) = fromIntegral n
    toEnum n = Sized (fromIntegral n)
+
+instance (SingI a) => Real (Sized a) where
+   toRational (Sized n) = toRational n
+
+instance (SingI a) => Integral (Sized a) where
+   quot (Sized n) (Sized m) = mkSized (n `quot` m)
+   rem (Sized n) (Sized m) = mkSized (n `rem` m)
+   div (Sized n) (Sized m) = mkSized (n `div` m)
+   mod (Sized n) (Sized m) = mkSized (n `mod` m)
+   quotRem a b = (a `quot` b,a `rem` b)
+   divMod a b = (a `div` b,a `mod` b)
+   toInteger (Sized n) = n
 
