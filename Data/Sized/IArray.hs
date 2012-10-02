@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, GADTs, ScopedTypeVariables, UndecidableInstances, MultiParamTypeClasses, FlexibleContexts #-}
+{-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, TypeOperators, GADTs, ScopedTypeVariables, UndecidableInstances, MultiParamTypeClasses, FlexibleContexts #-}
 module Data.Sized.IArray where
 
 import Data.Array as A hiding (indices,(!), ixmap, assocs)
@@ -11,6 +11,7 @@ import qualified Data.List as L hiding (all)
 import Numeric
 import Data.Array.Base as B
 import Data.Array.IArray as I
+import GHC.TypeLits
 
 import Data.Sized.Sized
 
@@ -57,7 +58,17 @@ rows a = forAll $ \ m -> forAll $ \ n -> a ! (m,n)
 columns :: (SizedIx n, SizedIx m, IArray mx a, IArray mx (mx m a)) => mx (m,n) a -> mx n (mx m a)
 columns a = forAll $ \ n -> forAll $ \ m -> a ! (m,n)
 
-show2D :: forall m n . (SizedIx m, SizedIx n) => ((m, n) -> String) -> String
+-- A 'Vector' is a 1D Matrix.
+type Vector ix a = Array (Sized ix) a
+
+-- | append two 1-d matrixes
+append :: (SingI left, SingI right, SingI (left + right)) => Vector left a -> Vector right a -> Vector (left + right) a
+append m1 m2 = matrix (I.elems m1 ++ I.elems m2)
+
+-------------------------------------------------------------------------------------
+
+
+show2D :: forall m n a . (Show a, SizedIx m, SizedIx n) => ((m, n) -> a) -> String
 show2D ff = (joinLines $ map showRow m_rows)
 	where
 		m'	    = forEach m $ \ (x,y) a -> (x == maxBound && y == maxBound,a)
@@ -66,14 +77,27 @@ show2D ff = (joinLines $ map showRow m_rows)
 		showRow	r   = concat (zipWith showEle (I.elems r) m_cols_size)
 		showEle (f,str) s = take (s - L.length str) (cycle " ") ++ " " ++ str ++ (if f then "" else ",")
                 m           :: A.Array (m,n) String
-                m           = forAll ff
+                m           = forAll (show . ff)
 		m_cols      = columns m
 		m_rows      = I.elems $ rows m'
 		m_cols_size = map (maximum . map L.length . I.elems) (I.elems m_cols)
 
-showAsE :: (RealFloat a) => Int -> a -> String
-showAsE i a = showEFloat (Just i) a ""
+data S = S String
 
-showAsF :: (RealFloat a) => Int -> a -> String
-showAsF i a = showFFloat (Just i) a ""
+instance Show S where
+	show (S s) = s
 
+showAsE :: (RealFloat a) => Int -> a -> S
+showAsE i a = S $ showEFloat (Just i) a ""
+
+showAsF :: (RealFloat a) => Int -> a -> S
+showAsF i a = S $ showFFloat (Just i) a ""
+
+--------------------------------------------------------------------------------
+
+-- We take the liberty of overloading Array here. It is only possible because
+-- we have sized types.
+
+instance (SizedIx ix) => Applicative (Array ix) where
+        pure a  = forAll $ \ _ -> a
+        m <*> a = forAll $ \ i -> (m ! i) (a ! i)
