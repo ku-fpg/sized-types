@@ -51,8 +51,6 @@ fromList xs | size == fromIntegral (L.length xs) = Matrix $ listArray (low,high)
 
     where
         size = rangeSize (low,high)
-	witness :: i
-	witness = undefined
   	low :: i
 	low = minBound
 	high :: i

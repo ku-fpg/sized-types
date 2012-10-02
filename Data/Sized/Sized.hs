@@ -11,11 +11,7 @@
 {-# LANGUAGE DataKinds, KindSignatures, TypeOperators, FlexibleInstances, OverlappingInstances #-}
 module Data.Sized.Sized where
 
-import Prelude hiding (all)
 import Data.Ix
-import Data.Sized.Arith
-import Data.Array as A hiding (indices,(!), ixmap, assocs)
-import qualified Data.Array as A
 import GHC.TypeLits
 
 data Sized :: Nat -> * where
