@@ -1,7 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Signed, fixed sized numbers.
--- 
+--
 -- Copyright: (c) 2009 University of Kansas
 -- License: BSD3
 --
@@ -9,7 +9,7 @@
 -- Stability: unstable
 -- Portability: ghc
 
-module Data.Sized.Signed 
+module Data.Sized.Signed
 	( Signed
 	, toMatrix
 	, fromMatrix
@@ -18,34 +18,34 @@ module Data.Sized.Signed
 	, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29
 	, S30, S31, S32
 	) where
-	
+
 import Data.Sized.Matrix as M
 import Data.Sized.Ix
 import Data.List as L
 import Data.Bits
 
-newtype Signed ix = Signed Integer 
+newtype Signed ix = Signed Integer
 
--- 'toMatrix' turns a sized 'Signed' value into a 'Matrix' of 'Bool's. 
+-- 'toMatrix' turns a sized 'Signed' value into a 'Matrix' of 'Bool's.
 toMatrix :: forall ix . (Size ix) => Signed ix -> Matrix ix Bool
 toMatrix s@(Signed v) = matrix $ take (size (error "toMatrix" :: ix)) $ map odd $ iterate (`div` 2) v
 
--- 'toMatrix' turns a a 'Matrix' of 'Bool's into sized 'Signed' value. 
+-- 'toMatrix' turns a a 'Matrix' of 'Bool's into sized 'Signed' value.
 fromMatrix :: (Size ix) => Matrix ix Bool -> Signed ix
 fromMatrix m = mkSigned $
-	  sum [ n	
+	  sum [ n
 	      | (n,b) <- zip (iterate (* 2) 1)
 			      (M.toList m)
 	      , b
 	      ]
--- 
+--
 mkSigned :: forall ix . (Size ix) => Integer -> Signed ix
 mkSigned v = res
    where sz' = 2 ^ (fromIntegral bitCount :: Integer)
 	 bitCount = size (error "mkUnsigned" :: ix) - 1
 	 res = case divMod v sz' of
-	  	(s,v') | even s    -> Signed v' 
-		       | otherwise -> Signed (v' - sz') 
+	  	(s,v') | even s    -> Signed v'
+		       | otherwise -> Signed (v' - sz')
 
 instance (Size ix) => Eq (Signed ix) where
 	(Signed a) == (Signed b) = a == b
@@ -57,7 +57,7 @@ instance (Enum ix, Size ix) => Read (Signed ix) where
 	readsPrec i str = [ (mkSigned a,r) | (a,r) <- readsPrec i str ]
 instance (Size ix) => Integral (Signed ix) where
   	toInteger (Signed m) = m
-	quotRem (Signed a) (Signed b) = 
+	quotRem (Signed a) (Signed b) =
 		case quotRem a b of
 		   (q,r) -> (mkSigned q,mkSigned r)
 instance (Size ix) => Num (Signed ix) where
@@ -71,7 +71,7 @@ instance (Size ix) => Real (Signed ix) where
 	toRational (Signed n) = toRational n
 instance (Size ix) => Enum (Signed ix) where
 	fromEnum (Signed n) = fromEnum n
-	toEnum n = mkSigned (toInteger n)	
+	toEnum n = mkSigned (toInteger n)
 instance (Size ix, Integral ix) => Bits (Signed ix) where
 	bitSize s = f s undefined
 	  where
@@ -87,6 +87,9 @@ instance (Size ix, Integral ix) => Bits (Signed ix) where
  	rotate v i = fromMatrix (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` M.length m)))
 		where m = toMatrix v
         testBit u idx = toMatrix u ! (fromIntegral idx)
+        -- new is 7.6?
+        bit   i  = fromMatrix (forAll $ \ ix -> if ix == fromIntegral i then True else False)
+        popCount n = sum $ fmap (\ b -> if b then 1 else 0) $ M.toList $ toMatrix n
 
 
 instance forall ix . (Size ix) => Bounded (Signed ix) where

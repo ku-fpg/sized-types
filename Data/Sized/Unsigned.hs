@@ -84,6 +84,9 @@ instance (Size ix, Integral ix) => Bits (Unsigned ix) where
  	rotate v i = fromMatrix (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` M.length m)))
 		where m = toMatrix v
         testBit u idx = toMatrix u ! (fromIntegral idx)
+        bit   i  = fromMatrix (forAll $ \ ix -> if ix == fromIntegral i then True else False)
+        popCount n = sum $ fmap (\ b -> if b then 1 else 0) $ M.toList $ toMatrix n
+
 
 instance forall ix . (Size ix) => Bounded (Unsigned ix) where
 	minBound = Unsigned 0
