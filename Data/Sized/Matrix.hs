@@ -124,8 +124,8 @@ instance (SizedIx i) => Applicative (Matrix i) where
 --mm a b = forAll $ \ (i,j) -> sum [ a ! (i,r) * b ! (r,j) | r <- universe ]
 
 -- | 'transpose' a 2D matrix.
-transpose :: (SizedIx x, SizedIx y) => Matrix (x,y) a -> Matrix (y,x) a
-transpose = ixmap $ \ (x,y) -> (y,x)
+--transpose :: (SizedIx x, SizedIx y) => Matrix (x,y) a -> Matrix (y,x) a
+--transpose = ixmap $ \ (x,y) -> (y,x)
 
 {-
 
