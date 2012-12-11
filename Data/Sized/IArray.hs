@@ -65,6 +65,8 @@ type Vector ix a = Array (Sized ix) a
 append :: (SingI left, SingI right, SingI (left + right)) => Vector left a -> Vector right a -> Vector (left + right) a
 append m1 m2 = matrix (I.elems m1 ++ I.elems m2)
 
+type instance (5 + 5) = 10
+
 -------------------------------------------------------------------------------------
 
 
