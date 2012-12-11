@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables, TypeFamilies #-}
+{-# LANGUAGE ScopedTypeVariables, TypeFamilies, DataKinds, FlexibleContexts, DataKinds #-}
 
 -- | Unsigned, fixed sized numbers.
 --
@@ -9,7 +9,8 @@
 -- Stability: unstable
 -- Portability: ghc
 
-module Data.Sized.Unsigned
+module Data.Sized.Unsigned where
+{-
 	( Unsigned
 	, toMatrix
 	, fromMatrix
@@ -18,14 +19,18 @@ module Data.Sized.Unsigned
 	, U20, U21, U22, U23, U24, U25, U26, U27, U28, U29
 	, U30, U31, U32
 	) where
+-}
 
 import Data.Sized.Matrix as M
 import Data.Sized.Ix
 import Data.Bits
 import Data.Ix
+import Data.Array.IArray as I
+import GHC.TypeLits
 
-newtype Unsigned ix = Unsigned Integer
+newtype Unsigned (ix :: Nat) = Unsigned Integer
 
+{-
 toMatrix :: forall ix . (Size ix) => Unsigned ix -> Matrix ix Bool
 toMatrix (Unsigned v) = matrix $ take (size (error "toMatrix" :: ix)) $ map odd $ iterate (`div` 2) v
 
@@ -36,55 +41,73 @@ fromMatrix m = mkUnsigned $
 			      (M.toList m)
 	      , b
 	      ]
+-}
 
-mkUnsigned :: forall ix . (Size ix) => Integer -> Unsigned ix
-mkUnsigned v = res
-   where sz' = 2 ^ (fromIntegral bitCount :: Integer)
-	 bitCount = size (error "mkUnsigned" :: ix)
-	 res = Unsigned (v `mod` sz')
+mkUnsigned :: forall ix . (SingI ix) => Integer -> Unsigned ix
+mkUnsigned x = Unsigned (x `mod` (2 ^ fromNat (sing :: Sing ix)))
 
-instance (Size ix) => Eq (Unsigned ix) where
+fromNat :: Sing (n :: Nat) -> Integer
+fromNat = fromSing
+
+instance Eq (Unsigned ix) where
 	(Unsigned a) == (Unsigned b) = a == b
-instance (Size ix) => Ord (Unsigned ix) where
+
+instance Ord (Unsigned ix) where
 	(Unsigned a) `compare` (Unsigned b) = a `compare` b
-instance (Size ix) => Show (Unsigned ix) where
+
+instance Show (Unsigned ix) where
 	show (Unsigned a) = show a
-instance (Size ix) => Read (Unsigned ix) where
+
+instance (SingI ix) => Read (Unsigned ix) where
 	readsPrec i str = [ (mkUnsigned a,r) | (a,r) <- readsPrec i str ]
-instance (Size ix) => Integral (Unsigned ix) where
+
+instance (SingI ix) => Integral (Unsigned ix) where
   	toInteger (Unsigned m) = m
 	quotRem (Unsigned a) (Unsigned b) =
 		case quotRem a b of
-		   (q,r) -> (mkUnsigned q,mkUnsigned r)
-instance (Size ix) => Num (Unsigned ix) where
+		   (q,r) -> (mkUnsigned q,mkUnsigned r) -- TODO: check for size
+
+instance (SingI ix) => Num (Unsigned ix) where
 	(Unsigned a) + (Unsigned b) = mkUnsigned $ a + b
 	(Unsigned a) - (Unsigned b) = mkUnsigned $ a - b
 	(Unsigned a) * (Unsigned b) = mkUnsigned $ a * b
 	abs (Unsigned n) = mkUnsigned $ abs n
 	signum (Unsigned n) = mkUnsigned $ signum n
 	fromInteger n = mkUnsigned n
-instance (Size ix) => Real (Unsigned ix) where
+
+instance (SingI ix) => Real (Unsigned ix) where
 	toRational (Unsigned n) = toRational n
-instance (Size ix) => Enum (Unsigned ix) where
+
+instance (SingI ix) => Enum (Unsigned ix) where
 	fromEnum (Unsigned n) = fromEnum n
 	toEnum n = mkUnsigned (toInteger n)
-instance (Size ix, Integral ix) => Bits (Unsigned ix) where
-	bitSize s = f s undefined
-	  where
-		f :: (Size a) => Unsigned a -> a -> Int
-		f _ ix = size ix
-	complement = fromMatrix . fmap not . toMatrix
-	isSigned _ = False
-	a `xor` b = fromMatrix (M.zipWith (/=) (toMatrix a) (toMatrix b))
-	a .|. b = fromMatrix (M.zipWith (||) (toMatrix a) (toMatrix b))
-	a .&. b = fromMatrix (M.zipWith (&&) (toMatrix a) (toMatrix b))
-	shiftL (Unsigned v) i = mkUnsigned (v * (2 ^ i))
-	shiftR (Unsigned v) i = mkUnsigned (v `div` (2 ^ i))
-	-- it might be possible to loosen the Integral requirement
- 	rotate v i = fromMatrix (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` M.length m)))
-		where m = toMatrix v
-        testBit u idx = toMatrix u ! (fromIntegral idx)
 
+instance (SingI ix) => Bits (Unsigned ix) where
+        bitSize _ = fromIntegral (fromNat (sing :: Sing ix))
+
+	complement (Unsigned v) = Unsigned (complement v)
+	isSigned _ = False
+	(Unsigned a) `xor` (Unsigned b) = Unsigned (a `xor` b)
+	(Unsigned a) .|. (Unsigned b) = Unsigned (a .|. b)
+	(Unsigned a) .&. (Unsigned b) = Unsigned (a .&. b)
+	shiftL (Unsigned v) i = mkUnsigned (shiftL v i)
+	shiftR (Unsigned v) i = mkUnsigned (shiftR v i)
+
+-- TODO: fix
+	-- it might be possible to loosen the Integral requirement
+-- 	rotate (Ui i = fromMatrix (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` M.population m)))
+--		where m = toMatrix v
+        testBit (Unsigned u) idx = testBit u idx
+
+
+--showBits :: Unsigned ix -> Vector ix Bool
+showBits :: (SingI ix) => Unsigned ix -> String
+showBits u = "0b" ++ reverse
+                 [ if testBit u i then '1' else '0'
+                 | i <- [0..(bitSize u - 1)]
+                 ]
+
+{-
 instance forall ix . (Size ix) => Bounded (Unsigned ix) where
 	minBound = Unsigned 0
         maxBound = Unsigned (2 ^ (size (error "Bounded/Unsigned" :: ix)) - 1)
@@ -142,3 +165,4 @@ type U29 = Unsigned X29
 type U30 = Unsigned X30
 type U31 = Unsigned X31
 type U32 = Unsigned X32
+-}
