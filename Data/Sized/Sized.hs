@@ -8,7 +8,7 @@
 -- Portability: ghc
 
 {-# LANGUAGE DataKinds, TypeFamilies, EmptyDataDecls, UndecidableInstances, ScopedTypeVariables, GADTs  #-}
-{-# LANGUAGE DataKinds, KindSignatures, TypeOperators, FlexibleInstances, OverlappingInstances #-}
+{-# LANGUAGE DataKinds, KindSignatures, TypeOperators, FlexibleInstances, OverlappingInstances, DataKinds #-}
 module Data.Sized.Sized where
 
 import Data.Ix
