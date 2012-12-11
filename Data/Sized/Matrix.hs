@@ -7,7 +7,7 @@
 -- Stability: unstable
 -- Portability: ghc
 
-{-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, ScopedTypeVariables, UndecidableInstances, MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, ScopedTypeVariables, UndecidableInstances, MultiParamTypeClasses, TypeOperators, DataKinds #-}
 module Data.Sized.Matrix where
 
 import Data.Array as A hiding (indices,(!), ixmap, assocs)
@@ -20,6 +20,7 @@ import qualified Data.List as L hiding (all)
 import Numeric
 import Data.Array.Base as B
 import Data.Array.IArray as I
+import GHC.TypeLits
 
 import Data.Sized.Sized
 
@@ -40,8 +41,11 @@ class M (m :: * -> * -> *) where
 instance (Ix ix) => Functor (Matrix ix) where
 	fmap f (Matrix xs) = Matrix (fmap f xs)
 
--- A 'Vector' is a 1D Matrix.
-type Vector ix a = Matrix (Sized ix) a
+-- | A 'Vector' is a 1D Matrix.
+type Vector  (ix :: Nat) a = Matrix (Sized ix) a
+
+-- | A 'Vector2' is a 2D Matrix.
+type Vector2 (ix :: Nat) (iy :: Nat) a = Matrix (Sized ix,Sized iy) a
 
 instance IArray Matrix a where
    bounds (Matrix arr) = B.bounds arr
@@ -120,12 +124,12 @@ instance (SizedIx i) => Applicative (Matrix i) where
 	a <*> b = forAll $ \ i -> (a ! i) (b ! i)
 
 -- | 'mm' is the 2D matrix multiply.
---mm :: (IArray mx a, SizedIx m, SizedIx n, SizedIx o, Num a) => mx (m,n) a -> mx (n,o) a -> mx (m,o) a
---mm a b = forAll $ \ (i,j) -> sum [ a ! (i,r) * b ! (r,j) | r <- universe ]
+mm :: (SizedIx m, SizedIx n, SizedIx o, Num a) => Matrix (m,n) a -> Matrix (n,o) a -> Matrix (m,o) a
+mm a b = forAll $ \ (i,j) -> sum [ a ! (i,r) * b ! (r,j) | r <- universe ]
 
 -- | 'transpose' a 2D matrix.
---transpose :: (SizedIx x, SizedIx y) => Matrix (x,y) a -> Matrix (y,x) a
---transpose = ixmap $ \ (x,y) -> (y,x)
+transpose :: (SizedIx x, SizedIx y) => Matrix (x,y) a -> Matrix (y,x) a
+transpose = ixmap corners $ \ (x,y) -> (y,x)
 
 {-
 
@@ -135,9 +139,7 @@ identity = (\ (x,y) -> if x == y then 1 else 0) <$> coord
 
 -- | stack two matrixes 'above' each other.
 above :: (SizedIx m, SizedIx top, SizedIx bottom, SizedIx both
-	 , ADD top bottom ~ both
-	 , SUB both top ~ bottom
-	 , SUB both bottom ~ top
+	 , top + bottom ~ both
 	 )
       => Matrix (top,m) a -> Matrix (bottom,m) a -> Matrix (both,m) a
 above m1 m2 = fromList (toList m1 ++ toList m2)
