@@ -8,14 +8,19 @@
 -- Portability: ghc
 
 {-# LANGUAGE DataKinds, TypeFamilies, EmptyDataDecls, UndecidableInstances, ScopedTypeVariables, GADTs  #-}
-{-# LANGUAGE DataKinds, KindSignatures, TypeOperators, FlexibleInstances, OverlappingInstances, DataKinds #-}
+{-# LANGUAGE DataKinds, KindSignatures, TypeOperators, FlexibleInstances, OverlappingInstances, DataKinds, DeriveDataTypeable #-}
 module Data.Sized.Sized where
 
 import Data.Ix
 import GHC.TypeLits
+import Data.Typeable
 
 data Sized :: Nat -> * where
    Sized :: Integer -> Sized (a :: Nat)
+
+
+instance SingI nat => Typeable (Sized (nat :: Nat)) where
+  typeOf _ = mkTyConApp (mkTyCon3 "sized-types" "Data.Sized.Sized" ("Sized#" ++ show (fromSing (sing :: Sing nat)))) []
 
 class    (Bounded i, Ix i) => SizedIx i where {}
 instance (Bounded i, Ix i) => SizedIx i where {}

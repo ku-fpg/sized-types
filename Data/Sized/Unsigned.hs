@@ -27,6 +27,7 @@ import Data.Bits
 import Data.Ix
 import Data.Array.IArray as I
 import GHC.TypeLits
+import Data.Typeable
 
 newtype Unsigned (ix :: Nat) = Unsigned Integer
 
@@ -106,6 +107,10 @@ showBits u = "0b" ++ reverse
                  [ if testBit u i then '1' else '0'
                  | i <- [0..(bitSize u - 1)]
                  ]
+
+instance SingI nat => Typeable (Unsigned (nat :: Nat)) where
+  typeOf _ = mkTyConApp (mkTyCon3 "sized-types" "Data.Sized.Unsigned" ("Unsigned#" ++ show (fromSing (sing :: Sing nat)))) []
+
 
 {-
 instance forall ix . (Size ix) => Bounded (Unsigned ix) where
