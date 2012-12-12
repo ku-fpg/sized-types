@@ -88,6 +88,9 @@ instance (Size ix, Integral ix) => Bits (Signed ix) where
  	rotate v i = fromMatrix (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` M.length m)))
 		where m = toMatrix v
         testBit u idx = toMatrix u ! (fromIntegral idx)
+        -- new is 7.6?
+        bit   i  = fromMatrix (forAll $ \ ix -> if ix == fromIntegral i then True else False)
+        popCount n = sum $ fmap (\ b -> if b then 1 else 0) $ M.toList $ toMatrix n
 
 
 instance forall ix . (Size ix) => Bounded (Signed ix) where

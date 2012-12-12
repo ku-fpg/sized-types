@@ -99,7 +99,8 @@ instance (SingI ix) => Bits (Unsigned ix) where
 -- 	rotate (Ui i = fromMatrix (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` M.population m)))
 --		where m = toMatrix v
         testBit (Unsigned u) idx = testBit u idx
-
+        bit   i  = fromMatrix (forAll $ \ ix -> if ix == fromIntegral i then True else False)
+        popCount n = sum $ fmap (\ b -> if b then 1 else 0) $ M.toList $ toMatrix n
 
 --showBits :: Unsigned ix -> Vector ix Bool
 showBits :: (SingI ix) => Unsigned ix -> String
@@ -110,7 +111,6 @@ showBits u = "0b" ++ reverse
 
 instance SingI nat => Typeable (Unsigned (nat :: Nat)) where
   typeOf _ = mkTyConApp (mkTyCon3 "sized-types" "Data.Sized.Unsigned" ("Unsigned#" ++ show (fromSing (sing :: Sing nat)))) []
-
 
 {-
 instance forall ix . (Size ix) => Bounded (Unsigned ix) where
