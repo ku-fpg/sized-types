@@ -21,39 +21,29 @@ module Data.Sized.Unsigned where
 	) where
 -}
 
+import Data.Array.IArray(elems)
 import Data.Sized.Matrix as M
-import Data.Sized.Ix
+import Data.Sized.Sized
 import Data.Bits
 import Data.Ix
-import Data.Array.IArray as I
 import GHC.TypeLits
 
 newtype Unsigned (ix :: Nat) = Unsigned Integer
+    deriving (Eq, Ord)
 
-{-
-toMatrix :: forall ix . (Size ix) => Unsigned ix -> Matrix ix Bool
-toMatrix (Unsigned v) = matrix $ take (size (error "toMatrix" :: ix)) $ map odd $ iterate (`div` 2) v
+toMatrix :: forall ix . (SingI ix) => Unsigned ix -> Matrix (Sized ix) Bool
+toMatrix (Unsigned v) = matrix $ take (size (error "toMatrix" :: (Sized ix))) $ map odd $ iterate (`div` 2) v
 
-fromMatrix :: (Size ix) => Matrix ix Bool -> Unsigned ix
+fromMatrix :: (SingI ix) => Matrix (Sized ix) Bool -> Unsigned ix
 fromMatrix m = mkUnsigned $
 	  sum [ n
 	      | (n,b) <- zip (iterate (* 2) 1)
-			      (M.toList m)
+			      (elems m)
 	      , b
 	      ]
--}
 
 mkUnsigned :: forall ix . (SingI ix) => Integer -> Unsigned ix
 mkUnsigned x = Unsigned (x `mod` (2 ^ fromNat (sing :: Sing ix)))
-
-fromNat :: Sing (n :: Nat) -> Integer
-fromNat = fromSing
-
-instance Eq (Unsigned ix) where
-	(Unsigned a) == (Unsigned b) = a == b
-
-instance Ord (Unsigned ix) where
-	(Unsigned a) `compare` (Unsigned b) = a `compare` b
 
 instance Show (Unsigned ix) where
 	show (Unsigned a) = show a
@@ -93,6 +83,9 @@ instance (SingI ix) => Bits (Unsigned ix) where
 	shiftL (Unsigned v) i = mkUnsigned (shiftL v i)
 	shiftR (Unsigned v) i = mkUnsigned (shiftR v i)
 
+        bit i                 = fromMatrix (forAll $ \ ix -> if ix == fromIntegral i then True else False)
+        popCount (Unsigned v) = popCount v
+
 -- TODO: fix
 	-- it might be possible to loosen the Integral requirement
 -- 	rotate (Ui i = fromMatrix (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` M.population m)))
@@ -107,17 +100,12 @@ showBits u = "0b" ++ reverse
                  | i <- [0..(bitSize u - 1)]
                  ]
 
-{-
-instance forall ix . (Size ix) => Bounded (Unsigned ix) where
+instance (SingI ix) => Bounded (Unsigned ix) where
 	minBound = Unsigned 0
-        maxBound = Unsigned (2 ^ (size (error "Bounded/Unsigned" :: ix)) - 1)
+        maxBound = Unsigned (2 ^ (fromNat (sing :: Sing ix)) - 1)
 
--- Unsigned ix as member of Size class.
 -- We do not address efficiency in this implementation.
-
-type instance Index (Unsigned ix)  = Int
-
-instance forall ix . (Size ix) => Ix (Unsigned ix) where
+instance (SingI ix) => Ix (Unsigned ix) where
     range     (l, u)    = [l .. u]
     inRange   (l, u) v  =  (l <= v) && (v <= u)
     index     (l, u) v | inRange (l,u) v = fromIntegral (v - l)
@@ -125,44 +113,38 @@ instance forall ix . (Size ix) => Ix (Unsigned ix) where
     rangeSize (l, u)   | l <= u           = fromIntegral $ (toInteger u) - (toInteger l) + 1
                        | otherwise       = 0
 
-instance forall ix . (Size ix) => Size (Unsigned ix) where
-    size         = const s
-	where s  = fromIntegral $ toInteger (maxBound :: Unsigned ix) + 1
-    addIndex v n =  v + (fromIntegral n)  -- fix bounds issues
-    toIndex v    = fromIntegral v
 
 -- | common; numerically boolean.
-type U1 = Unsigned X1
+type U1 = Unsigned 1
 
-type U2 = Unsigned X2
-type U3 = Unsigned X3
-type U4 = Unsigned X4
-type U5 = Unsigned X5
-type U6 = Unsigned X6
-type U7 = Unsigned X7
-type U8 = Unsigned X8
-type U9 = Unsigned X9
-type U10 = Unsigned X10
-type U11 = Unsigned X11
-type U12 = Unsigned X12
-type U13 = Unsigned X13
-type U14 = Unsigned X14
-type U15 = Unsigned X15
-type U16 = Unsigned X16
-type U17 = Unsigned X17
-type U18 = Unsigned X18
-type U19 = Unsigned X19
-type U20 = Unsigned X20
-type U21 = Unsigned X21
-type U22 = Unsigned X22
-type U23 = Unsigned X23
-type U24 = Unsigned X24
-type U25 = Unsigned X25
-type U26 = Unsigned X26
-type U27 = Unsigned X27
-type U28 = Unsigned X28
-type U29 = Unsigned X29
-type U30 = Unsigned X30
-type U31 = Unsigned X31
-type U32 = Unsigned X32
--}
+type U2 = Unsigned 2
+type U3 = Unsigned 3
+type U4 = Unsigned 4
+type U5 = Unsigned 5
+type U6 = Unsigned 6
+type U7 = Unsigned 7
+type U8 = Unsigned 8
+type U9 = Unsigned 9
+type U10 = Unsigned 10
+type U11 = Unsigned 11
+type U12 = Unsigned 12
+type U13 = Unsigned 13
+type U14 = Unsigned 14
+type U15 = Unsigned 15
+type U16 = Unsigned 16
+type U17 = Unsigned 17
+type U18 = Unsigned 18
+type U19 = Unsigned 19
+type U20 = Unsigned 20
+type U21 = Unsigned 21
+type U22 = Unsigned 22
+type U23 = Unsigned 23
+type U24 = Unsigned 24
+type U25 = Unsigned 25
+type U26 = Unsigned 26
+type U27 = Unsigned 27
+type U28 = Unsigned 28
+type U29 = Unsigned 29
+type U30 = Unsigned 30
+type U31 = Unsigned 31
+type U32 = Unsigned 32

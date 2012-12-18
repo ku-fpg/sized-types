@@ -3,19 +3,19 @@
 module QC where
 
 import qualified Test.QuickCheck as QC
-import Data.Sized.Ix()
+import Data.Ix
+
+import Data.Sized.Sized
 import Data.Sized.Matrix as M
-import Data.Sized.Arith
 
-instance Size n => QC.Arbitrary (X0_ n) where
+import GHC.TypeLits
+
+instance (SingI n) => QC.Arbitrary (Sized n) where
 	arbitrary = QC.elements [minBound .. maxBound]
-	
-instance Size n => QC.Arbitrary (X1_ n) where
-	arbitrary = QC.elements [minBound .. maxBound]	
 
-instance (QC.Arbitrary ix, Size ix, QC.Arbitrary a) => QC.Arbitrary (Matrix ix a) where
+instance (QC.Arbitrary ix, Bounded ix, Ix ix, QC.Arbitrary a) => QC.Arbitrary (Matrix ix a) where
 	arbitrary = f $ \ ixs -> do
           elems <- sequence [ QC.arbitrary | _ <- ixs ]
           return $ matrix elems
-         where f :: (Size ix) => ([ix] -> m (Matrix ix a)) -> m (Matrix ix a)
-               f fn = fn M.all
+         where f :: (Bounded ix, Ix ix) => ([ix] -> m (Matrix ix a)) -> m (Matrix ix a)
+               f fn = fn (M.allIndices (undefined :: Matrix ix a))

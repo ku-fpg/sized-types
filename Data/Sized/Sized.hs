@@ -7,29 +7,77 @@
 -- Stability: unstable
 -- Portability: ghc
 
-{-# LANGUAGE DataKinds, TypeFamilies, EmptyDataDecls, UndecidableInstances, ScopedTypeVariables, GADTs  #-}
-{-# LANGUAGE DataKinds, KindSignatures, TypeOperators, FlexibleInstances, OverlappingInstances, DataKinds #-}
+{-
+Status of Branch:  NatsNotReady
+
+This branch attempted to replace the data Types X0, (X0_ a) and (X1_ a)
+with the recent addtion to GHC, TypeNats   (Type Level Literals)
+http://hackage.haskell.org/trac/ghc/wiki/TypeNats
+
+Although this branch does successfully build, and "appears" to
+be operational (except for matrix above, beside functions).
+
+At the current time (GHC 7.6 - Dec. 2012),  TypeNats do not fulfill the
+needs of this SizedTypes module, or its usage in KansasLava.
+
+1.  Type level computation with TypeNats is limited:
+(<=) :: Nat -> Nat -> Prop    -- Comparison
+(+)  :: Nat -> Nat -> Nat     -- Addition
+(*)  :: Nat -> Nat -> Nat     -- Multiplication
+(^)  :: Nat -> Nat -> Nat     -- Exponentiation
+        We really need at least Subtraction and Log2 as well.
+Also, these computations are strictly limited in application because,
+for example,  (3 + 7) =/= (7 + 3)
+
+    Couldn't match type `3 GHC.TypeLits.+ 7' with `7 GHC.TypeLits.+ 3'
+    NB: `GHC.TypeLits.+' is a type function, and may not be injective
+    Expected type: 7 GHC.TypeLits.+ 3
+      Actual type: 3 GHC.TypeLits.+ 7
+    In the first argument of `(==)', namely `(m1 `above` m2)'
+
+2.  Template Haskell has not yet been updated to support TypeNats
+and KansasLava uses TH in the defintion of number Rep instances.
+
+3.  Distinguishing between kinds and types with the same name,
+and stablishing constraints in KansasLava was difficult.
+Not able to push this, however, since #2 stopped development
+when defining instances of Rep.
+
+These issues are likely to be resolved in future releases of GHC,
+so it may be worthwhile to re-visit this branch, then.
+
+
+-}
+
+{-# LANGUAGE TypeFamilies, ScopedTypeVariables, UndecidableInstances, FlexibleInstances, GADTs  #-}
+{-# LANGUAGE DataKinds, KindSignatures #-}
 module Data.Sized.Sized where
 
 import Data.Ix
 import GHC.TypeLits
 
 data Sized :: Nat -> * where
-   Sized :: Integer -> Sized (a :: Nat)
+        Sized :: Integer -> Sized (a :: Nat)
+     deriving (Eq, Ord)
 
+{-
 class    (Bounded i, Ix i) => SizedIx i where {}
 instance (Bounded i, Ix i) => SizedIx i where {}
+-}
+
+fromNat :: Sing (n :: Nat) -> Integer
+fromNat = fromSing
 
 -- A finite (bounding) corners of an finite indexed entity
-corners :: forall i . (SizedIx i) => (i,i)
+corners :: forall i . (Bounded i, Ix i) => (i,i)
 corners = (minBound :: i,maxBound)
 
 -- | A list of all possible values of a type.
-universe :: (SizedIx ix) => [ix]
+universe :: (Bounded ix, Ix ix) => [ix]
 universe = range corners
 
 -- property:length (universe :: [a]) == size a
-size :: forall ix . (SizedIx ix) => ix -> Int
+size :: forall ix . (Bounded ix, Ix ix) => ix -> Int
 size _ = rangeSize (corners :: (ix,ix))
 
 mkSized :: forall n . SingI n => Integer -> Sized n
@@ -52,12 +100,6 @@ instance SingI a => Num (Sized a) where
    abs (Sized a) = mkSized (abs a)
    signum (Sized a) = mkSized (signum a)
    fromInteger n = mkSized (fromInteger n)
-
-instance Eq (Sized a) where
-  (Sized a) == (Sized b) = a == b
-
-instance Ord (Sized a) where
-  (Sized a) `compare` (Sized b) = a `compare` b
 
 {-
 -- This allows zero-length arrays, later.
