@@ -58,7 +58,7 @@ matrix = listArray corners
 
 -- | what is the population of a matrix?
 population :: forall i a . (Bounded i, Ix i) => Matrix i a -> Int
-population _ = size (undefined :: i)
+population _ = size (error "Population" :: i)
 
 allIndices :: (Bounded i, Ix i) => Matrix i a -> [i]
 allIndices _ = universe

@@ -56,17 +56,27 @@ module Data.Sized.Sized where
 import Data.Ix
 import GHC.TypeLits
 
+type TNat (a::Nat) = Sing a
+
+{-
 data Sized :: Nat -> * where
         Sized :: Integer -> Sized (a :: Nat)
      deriving (Eq, Ord)
-
-{-
-class    (Bounded i, Ix i) => SizedIx i where {}
-instance (Bounded i, Ix i) => SizedIx i where {}
 -}
+newtype Sized (n :: Nat) = MkSized Integer
+    deriving (Eq, Ord)
 
 fromNat :: Sing (n :: Nat) -> Integer
 fromNat = fromSing
+
+-- ----------------------------------------------------------
+--  Some common type instances that greatly facilitate
+--  type reasoning about Sized types.
+
+type instance (n * 1) = n
+
+-- ----------------------------------------------------------
+
 
 -- A finite (bounding) corners of an finite indexed entity
 corners :: forall i . (Bounded i, Ix i) => (i,i)
@@ -80,25 +90,25 @@ universe = range corners
 size :: forall ix . (Bounded ix, Ix ix) => ix -> Int
 size _ = rangeSize (corners :: (ix,ix))
 
-mkSized :: forall n . SingI n => Integer -> Sized n
+mkSized :: forall x . SingI x => Integer -> Sized x
 mkSized n | m == 0 = error "<<Sized 0>>"
           | n < 0  = error $ show n ++ " (:: Sized " ++ show m ++ ") is below upper bound"
           | n >= m = error $ show n ++ " (:: Sized " ++ show m ++ ") is above upper bound"
-          | otherwise = Sized n
-                where m = fromSing (sing :: Sing n)
+          | otherwise = MkSized n
+                where m = fromSing (sing :: Sing x)
 
 instance Show (Sized a) where
-   show (Sized a) = show a
+   show (MkSized a) = show a
 
 instance SingI a => Read (Sized a) where
    readsPrec i str0 = [ (mkSized v,str1) | (v,str1) <- readsPrec i str0 ]
 
 instance SingI a => Num (Sized a) where
-   (Sized a) + (Sized b) = mkSized (a + b)
-   (Sized a) * (Sized b) = mkSized (a * b)
-   (Sized a) - (Sized b) = mkSized (a - b)
-   abs (Sized a) = mkSized (abs a)
-   signum (Sized a) = mkSized (signum a)
+   (MkSized a) + (MkSized b) = mkSized (a + b)
+   (MkSized a) * (MkSized b) = mkSized (a * b)
+   (MkSized a) - (MkSized b) = mkSized (a - b)
+   abs (MkSized a) = mkSized (abs a)
+   signum (MkSized a) = mkSized (signum a)
    fromInteger n = mkSized (fromInteger n)
 
 {-
@@ -110,28 +120,28 @@ instance Ix (Sized 0) where
 -}
 
 instance (SingI a) => Ix (Sized a) where
-  range   (Sized n,Sized m) = [ mkSized x | x <- range (n,m) ]
-  index   (Sized n,Sized m) (Sized i) = index (n,m) i
-  inRange (Sized n,Sized m) (Sized i) = inRange (n,m) i
-  rangeSize (Sized n,Sized m) = fromIntegral $ max ((m - n) + 1) 0
+  range   (MkSized n, MkSized m) = [ mkSized x | x <- range (n,m) ]
+  index   (MkSized n, MkSized m) (MkSized i) = index (n,m) i
+  inRange (MkSized n, MkSized m) (MkSized i) = inRange (n,m) i
+  rangeSize (MkSized n, MkSized m) = fromIntegral $ max ((m - n) + 1) 0
 
 instance SingI a => Bounded (Sized a) where
    minBound = mkSized 0
    maxBound = n where n = mkSized (fromSing (sing :: Sing a) - 1)
 
 instance Enum (Sized a) where
-   fromEnum (Sized n) = fromIntegral n
-   toEnum n = Sized (fromIntegral n)
+   fromEnum (MkSized n) = fromIntegral n
+   toEnum n = MkSized (fromIntegral n)
 
 instance (SingI a) => Real (Sized a) where
-   toRational (Sized n) = toRational n
+   toRational (MkSized n) = toRational n
 
 instance (SingI a) => Integral (Sized a) where
-   quot (Sized n) (Sized m) = mkSized (n `quot` m)
-   rem (Sized n) (Sized m) = mkSized (n `rem` m)
-   div (Sized n) (Sized m) = mkSized (n `div` m)
-   mod (Sized n) (Sized m) = mkSized (n `mod` m)
+   quot (MkSized n) (MkSized m) = mkSized (n `quot` m)
+   rem (MkSized n) (MkSized m) = mkSized (n `rem` m)
+   div (MkSized n) (MkSized m) = mkSized (n `div` m)
+   mod (MkSized n) (MkSized m) = mkSized (n `mod` m)
    quotRem a b = (a `quot` b,a `rem` b)
    divMod a b = (a `div` b,a `mod` b)
-   toInteger (Sized n) = n
+   toInteger (MkSized n) = n
 
