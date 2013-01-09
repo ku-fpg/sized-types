@@ -1,12 +1,12 @@
 
 -- Copy this module if you need Quick Check.
-module QC where
+module QC.QC where
 
 import qualified Test.QuickCheck as QC
 import Data.Ix
 
 import Data.Sized.Sized
-import Data.Sized.Matrix as M
+import Data.Sized.Matrix
 
 import GHC.TypeLits
 
@@ -18,4 +18,4 @@ instance (QC.Arbitrary ix, Bounded ix, Ix ix, QC.Arbitrary a) => QC.Arbitrary (M
           elems <- sequence [ QC.arbitrary | _ <- ixs ]
           return $ matrix elems
          where f :: (Bounded ix, Ix ix) => ([ix] -> m (Matrix ix a)) -> m (Matrix ix a)
-               f fn = fn (M.allIndices (undefined :: Matrix ix a))
+               f fn = fn (allIndices (undefined :: Matrix ix a))

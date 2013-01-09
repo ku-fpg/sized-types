@@ -1,4 +1,4 @@
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, TypeFamilies, TypeOperators #-}
 
 module Main where
 
@@ -8,25 +8,33 @@ import Data.Sized.Signed as S
 import Data.Sized.Unsigned as U
 import Control.Applicative
 
+import GHC.TypeLits
+
+-- NatType equivalences required for the above and beside tests.
+type instance (3 + 3) = 6
+type instance (4 + 4) = 8
+
+
 main :: IO ()
 main = do
---	print example1
+	print example1
 	print example2
 	print $ transpose example2
 	print $ example2 `mm` transpose example2
 	print $ fmap odd example2
---	print $ example2 `above` example2
---	print $ example2 `beside` example2
+	print $ example2 `above` example2
+	print $ example2 `beside` example2
 	print $ example3
 	print $ example4
 	print $ example5
 	print $ example6
 	print $ example7
+--      cropAt function no longer supported
 --	print $ example8
---	print $ fmap (\ v -> if v == (0 :: Double)
---		 	     then S ""
---			     else showAsE 3 v)
---	      $ fmap (fromIntegral) example6
+	print $ fmap (\ v -> if v == (0 :: Double)
+		 	     then S ""
+			     else showAsE 3 v)
+	      $ fmap (fromIntegral) example6
 
 	let s :: [Signed 4]
 	    s = [ x * y | x <- [1..5], y <- [0..5]]
@@ -36,12 +44,12 @@ main = do
 	    u = [ x * y | x <- [1..5], y <- [0..5]]
 	print u
 
-	print $ fmap S.toMatrix s
-	print $ fmap U.toMatrix u
+	print $ fmap S.toVector s
+	print $ fmap U.toVector u
 
 
--- example1 :: Matrix (Sized 5,Sized 5) Int
--- example1 = identity
+example1 :: Matrix (Sized 5,Sized 5) Int
+example1 = identity
 
 example2 :: Matrix (Sized 3,Sized 4) Int
 example2 = matrix [1..12]
@@ -64,5 +72,6 @@ example7 :: Matrix (Sized 10,Sized 10) Int
 example7 = matrix [1..100]
 
 
+--      cropAt function no longer supported
 -- example8 :: Matrix (Sized 4,Sized 5) Int
 -- example8 = example7 `cropAt` (2,3)
