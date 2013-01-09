@@ -11,8 +11,8 @@
 
 module Data.Sized.Signed
 	( Signed
-	, toMatrix
-	, fromMatrix
+	, toVector
+	, fromVector
 	,           S2,  S3,  S4,  S5,  S6,  S7,  S8,  S9
 	, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19
 	, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29
@@ -28,13 +28,13 @@ import GHC.TypeLits
 newtype Signed (ix :: Nat) = Signed Integer
     deriving (Eq, Ord)
 
--- 'toMatrix' turns a sized 'Signed' value into a 'Matrix' of 'Bool's.
-toMatrix :: forall ix . (SingI ix) => Signed ix -> Matrix (Sized ix) Bool
-toMatrix (Signed v) = matrix $ take (size (error "toMatrix" :: (Sized ix))) $ map odd $ iterate (`div` 2) v
+-- 'toVector' turns a sized 'Signed' value into a 'Vector' of 'Bool's.
+toVector :: forall ix . (SingI ix) => Signed ix -> Vector ix Bool
+toVector (Signed v) = matrix $ take (fromIntegral $ fromSing (sing :: Sing ix)) $ map odd $ iterate (`div` 2) v
 
--- 'toMatrix' turns a a 'Matrix' of 'Bool's into sized 'Signed' value.
-fromMatrix :: (SingI ix) => Matrix (Sized ix) Bool -> Signed ix
-fromMatrix m = mkSigned $
+-- 'fromVector' turns a 'Vector' of 'Bool's into a sized 'Signed' value.
+fromVector :: (SingI ix) => Vector ix Bool -> Signed ix
+fromVector m = mkSigned $
 	  sum [ n
 	      | (n,b) <- zip (iterate (* 2) 1)
 			      (elems m)
@@ -92,7 +92,7 @@ instance (SingI ix) => Bits (Signed ix) where
 --		where m = toMatrix v
         testBit (Signed v) idx = testBit v idx
 
-        bit   i  = fromMatrix (forAll $ \ ix -> if ix == fromIntegral i then True else False)
+        bit   i  = fromVector (forAll $ \ ix -> if ix == fromIntegral i then True else False)
         popCount (Signed v) = popCount v
 
 

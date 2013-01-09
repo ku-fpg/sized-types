@@ -13,15 +13,15 @@ import GHC.TypeLits
 data Sampled (m :: Nat) (n :: Nat) = Sampled (Signed n) Rational
 --	deriving Show
 
-toMatrix :: (SingI m, SingI n) => Sampled m n -> Matrix (Sized n) Bool
-toMatrix (Sampled sig _) = S.toMatrix sig
+toVector :: (SingI m, SingI n) => Sampled m n -> Vector n Bool
+toVector (Sampled sig _) = S.toVector sig
 
-fromMatrix :: forall n m1 . (SingI n, SingI m1) => Matrix (Sized n) Bool -> Sampled m1 n
-fromMatrix m = mkSampled (fromIntegral scale * fromIntegral val / fromIntegral precision)
+fromVector :: forall n m . (SingI n, SingI m) => Vector n Bool -> Sampled m n
+fromVector v = mkSampled (fromIntegral scale * fromIntegral val / fromIntegral precision)
    where val :: Signed n
-	 val = S.fromMatrix m
+	 val = S.fromVector v
 	 scale     :: Integer
- 	 scale     = fromIntegral (fromNat (sing :: Sing m1))
+ 	 scale     = fromIntegral (fromNat (sing :: Sing m))
  	 precision :: Integer
  	 precision = 2 ^ (fromIntegral (fromNat (sing :: Sing n) - 1) :: Integer)
 

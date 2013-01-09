@@ -8,7 +8,7 @@
 -- Portability: ghc
 
 {-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, ScopedTypeVariables,
-  UndecidableInstances, MultiParamTypeClasses, TypeOperators, DataKinds #-}
+  UndecidableInstances, MultiParamTypeClasses, TypeOperators, DataKinds, FlexibleContexts #-}
 module Data.Sized.Matrix where
 
 import Prelude as P hiding (all)
@@ -28,29 +28,24 @@ import Data.Sized.Sized
 data Matrix ix a = Matrix (Array ix a)
         deriving (Eq, Ord)
 
-{-
-class M (m :: * -> * -> *) where
-  (.!) :: (Bounded i, Ix ix) => m ix a -> ix -> a
-  toList' :: m i a -> [a]
-  fromList' :: [a] -> m i a
--}
--- TODO: add instances
-
--- TODO.  I think this is unnecessary.
-instance (Ix ix) => Functor (Matrix ix) where
-	fmap f (Matrix xs) = Matrix (fmap f xs)
-
--- | A 'Vector' is a 1D Matrix.
+-- | A 'Vector' is a 1D Matrix, using a TypeNat to define its length.
 type Vector  (ix :: Nat) a = Matrix (Sized ix) a
 
--- | A 'Vector2' is a 2D Matrix.
+-- | A 'Vector2' is a 2D Matrix, using a TypeNat's to define its size.
 type Vector2 (ix :: Nat) (iy :: Nat) a = Matrix (Sized ix,Sized iy) a
+
+instance (Ix ix) => Functor (Matrix ix) where
+	fmap f (Matrix xs) = Matrix (fmap f xs)
 
 instance IArray Matrix a where
    bounds (Matrix arr) = B.bounds arr
    numElements (Matrix arr) = B.numElements arr
    unsafeArray (a,b) ass = Matrix $ B.unsafeArray (a,b) ass
    unsafeAt (Matrix arr) i = B.unsafeAt arr i
+
+instance (Bounded i, Ix i) => Applicative (Matrix i) where
+    pure a = fmap (const a) coord	-- possible because we are a fixed size
+    a <*> b = forAll $ \ i -> (a ! i) (b ! i)
 
 -- | 'matrix' turns a finite list into a matrix. You often need to give the type of the result.
 matrix :: forall m i a . (IArray m a, Bounded i, Ix i) => [a] -> m i a
@@ -63,37 +58,10 @@ population _ = size (error "Population" :: i)
 allIndices :: (Bounded i, Ix i) => Matrix i a -> [i]
 allIndices _ = universe
 
--- TODO.  Delete the following ...
---  Since Matrix has been defined as an instance of IArray.
---  these function definitions are no longer required.
-{-
--- | '!' looks up an element in the matrix.
-(!) ::  (Ix n) => Matrix n a -> n -> a
-(!) (Matrix xs) n = xs A.! n
-
--- | 'indices' is a version of 'Data.Sized.Ix.all' that takes a type, for forcing the result type using the Matrix type.
-indices :: (Bounded i, Ix i) => Matrix i a -> [i]
-indices _ = universe
-
--- | 'assocs' extracts the index/value pairs.
-assocs :: (Bounded i, Ix i) => Matrix i a -> [(i,a)]
-assocs (Matrix a) = A.assocs a
-
-(//) :: (Bounded i, Ix i) => Matrix i e -> [(i, e)] -> Matrix i e
-(//) (Matrix arr) ixs = Matrix (arr A.// ixs)
-
-accum :: (Bounded i, Ix i) => (e -> a -> e) -> Matrix i e -> [(i, a)] -> Matrix i e
-accum f (Matrix arr) ixs = Matrix (A.accum f arr ixs)
-
--- | look at a matrix through a lens to another matrix.
-ixmap :: (Bounded i, Ix i, Bounded j, Ix j) => (i -> j) -> Matrix j a -> Matrix i a
-ixmap f m = (\ i -> m ! f i) <$> coord
-
--}
 
 -- | 'zeroOf' is for use to force typing issues, and is 0.
---zeroOf :: (Bounded i, Ix i) => Matrix i a -> i
---zeroOf _ = minBound
+zeroOf :: (Bounded i, Ix i) => Matrix i a -> i
+zeroOf _ = minBound
 
 -- | 'coord' returns a matrix filled with indexes.
 coord :: (Bounded i, Ix i) => Matrix i i
@@ -111,10 +79,6 @@ forEach a f = Data.Sized.Matrix.zipWith f coord a
 forAll :: (Bounded i, Ix i) => (i -> a) -> Matrix i a
 forAll f = fmap f coord
 
-instance (Bounded i, Ix i) => Applicative (Matrix i) where
-	pure a = fmap (const a) coord	-- possible because we are a fixed size
-	a <*> b = forAll $ \ i -> (a ! i) (b ! i)
-
 -- | 'mm' is the 2D matrix multiply.
 mm :: (Bounded m, Ix m, Bounded n, Ix n, Bounded o, Ix o, Num a) => Matrix (m,n) a -> Matrix (n,o) a -> Matrix (m,o) a
 mm a b = forAll $ \ (i,j) -> sum [ a ! (i,r) * b ! (r,j) | r <- universe ]
@@ -128,6 +92,12 @@ transpose = ixmap corners $ \ (x,y) -> (y,x)
 identity :: (Bounded x, Ix x, Num a) => Matrix (x,x) a
 identity = (\ (x,y) -> if x == y then 1 else 0) <$> coord
 
+-- TODO.  Is the type constraint for 'both' sufficient ?
+-- In an earlier version we had:
+--         , ADD top bottom ~ both
+--         , SUB both top ~ bottom
+--         , SUB both bottom ~ top
+
 -- | stack two matrixes 'above' each other.
 above :: (Bounded m,      Ix m,
           SingI top, SingI bottom, SingI both,
@@ -137,42 +107,19 @@ above :: (Bounded m,      Ix m,
 above m1 m2 = matrix (elems m1 ++ elems m2)
 
 -- | stack two matrixes 'beside' each other.
-beside
-  :: (Bounded m, Ix m,
-      SingI left, SingI right, SingI both,
-      (left + right) ~ both
-     ) =>
-     Matrix (m, Sized left) a -> Matrix (m, Sized right) a -> Matrix (m, Sized both) a
-beside m1 m2 = transpose (transpose m1 `above` transpose m2)
-
--- TODO.  Are the type constaints on 'above' acceptable?
--- If so, we can do the same for the following functions.
-{-
--- | stack two matrixes 'beside' each other.
-beside
-  :: (SizedIx m,
-      SizedIx left,
-      SizedIx right,
-      SizedIx both
-     , ADD left right ~ both
-     , SUB both left ~ right
-     , SUB both right ~ left
-     ) =>
-     Matrix (m, left) a -> Matrix (m, right) a -> Matrix (m, both) a
+beside :: (Bounded m, Ix m,
+           SingI left, SingI right, SingI both,
+           (left + right) ~ both
+          )
+         => Matrix (m, Sized left) a -> Matrix (m, Sized right) a -> Matrix (m, Sized both) a
 beside m1 m2 = transpose (transpose m1 `above` transpose m2)
 
 -- | append two 1-d matrixes
-append ::
-     (Bounded left,  Ix left,
-      Bounded right, Ix right,
-      Bounded both,  Ix both
-     , ADD left right ~ both
-     , SUB both left ~ right
-     , SUB both right ~ left
-     ) => Matrix left a -> Matrix right a -> Matrix both a
-append m1 m2 = fromList (toList m1 ++ toList m2)
-
--}
+append :: forall left right both a . (SingI left, SingI right, SingI both,
+           (left + right) ~ both
+          )
+         => Vector left a -> Vector right a -> Vector both a
+append m1 m2 = matrix (elems m1 ++ elems m2)
 
 -- | look at a matrix through a functor lens, to another matrix.
 ixfmap :: (Bounded i, Ix i, Bounded j, Ix j, Functor f) => (i -> f j) -> Matrix j a -> Matrix i (f a)
@@ -230,7 +177,7 @@ instance (Bounded ix, Ix ix) => F.Foldable (Matrix ix) where
 
 -- | 'showMatrix' displays a 2D matrix, and is the worker for 'show'.
 --
--- > GHCi> matrix [1..42] :: Matrix (X7,X6) Int
+-- > GHCi> matrix [1..42] :: Matrix (Sized 7, Sized 6) Int
 -- > [  1,  2,  3,  4,  5,  6,
 -- >    7,  8,  9, 10, 11, 12,
 -- >   13, 14, 15, 16, 17, 18,
@@ -251,8 +198,13 @@ showMatrix m = (joinLines $ map showRow m_rows)
 		m_cols      = columns m
 		m_rows      = elems $ rows m'
 		m_cols_size = fmap (maximum . map L.length . elems) m_cols
+{-
+-- Unfortunately overlapping instance
+instance (Show a, SingI ix, SingI iy) => Show (Vector2 ix iy a) where
+	show = showMatrix . fmap show
+-}
 
-
+-- TODO.  Show does not display a 2-D matrix as a box.
 instance (Show a, Bounded ix, Ix ix) => Show (Matrix ix a) where
 	show = showMatrix . fmap show . unitRow
 

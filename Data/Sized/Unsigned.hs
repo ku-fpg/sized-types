@@ -9,17 +9,16 @@
 -- Stability: unstable
 -- Portability: ghc
 
-module Data.Sized.Unsigned where
-{-
+module Data.Sized.Unsigned
 	( Unsigned
-	, toMatrix
-	, fromMatrix
+	, toVector
+	, fromVector
+        , showBits
 	,      U1,  U2,  U3,  U4,  U5,  U6,  U7,  U8,  U9
 	, U10, U11, U12, U13, U14, U15, U16, U17, U18, U19
 	, U20, U21, U22, U23, U24, U25, U26, U27, U28, U29
 	, U30, U31, U32
 	) where
--}
 
 import Data.Array.IArray(elems)
 import Data.Sized.Matrix as M
@@ -31,11 +30,13 @@ import GHC.TypeLits
 newtype Unsigned (ix :: Nat) = Unsigned Integer
     deriving (Eq, Ord)
 
-toMatrix :: forall ix . (SingI ix) => Unsigned ix -> Matrix (Sized ix) Bool
-toMatrix (Unsigned v) = matrix $ take (size (error "toMatrix" :: (Sized ix))) $ map odd $ iterate (`div` 2) v
+-- 'toVector' turns a sized 'Unsigned' value into a 'Vector' of 'Bool's.
+toVector :: forall ix . (SingI ix) => Unsigned ix -> Vector ix Bool
+toVector (Unsigned v) = matrix $ take (fromIntegral $ fromSing (sing :: Sing ix)) $ map odd $ iterate (`div` 2) v
 
-fromMatrix :: (SingI ix) => Matrix (Sized ix) Bool -> Unsigned ix
-fromMatrix m = mkUnsigned $
+-- 'fromVector' turns a 'Vector' of 'Bool's into sized 'Unsigned' value.
+fromVector :: (SingI ix) => Vector ix Bool -> Unsigned ix
+fromVector m = mkUnsigned $
 	  sum [ n
 	      | (n,b) <- zip (iterate (* 2) 1)
 			      (elems m)
@@ -43,7 +44,8 @@ fromMatrix m = mkUnsigned $
 	      ]
 
 mkUnsigned :: forall ix . (SingI ix) => Integer -> Unsigned ix
-mkUnsigned x = Unsigned (x `mod` (2 ^ fromNat (sing :: Sing ix)))
+mkUnsigned x = Unsigned (x `mod` (2 ^ bitCount))
+    where bitCount = fromNat (sing :: Sing ix)
 
 instance Show (Unsigned ix) where
 	show (Unsigned a) = show a
@@ -83,17 +85,16 @@ instance (SingI ix) => Bits (Unsigned ix) where
 	shiftL (Unsigned v) i = mkUnsigned (shiftL v i)
 	shiftR (Unsigned v) i = mkUnsigned (shiftR v i)
 
-        bit i                 = fromMatrix (forAll $ \ ix -> if ix == fromIntegral i then True else False)
+        bit i                 = fromVector (forAll $ \ ix -> if ix == fromIntegral i then True else False)
         popCount (Unsigned v) = popCount v
 
 -- TODO: fix
 	-- it might be possible to loosen the Integral requirement
--- 	rotate (Ui i = fromMatrix (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` M.population m)))
---		where m = toMatrix v
+-- 	rotate (Ui i = fromVector (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` M.population m)))
+--		where m = toVector v
         testBit (Unsigned u) idx = testBit u idx
 
 
---showBits :: Unsigned ix -> Vector ix Bool
 showBits :: (SingI ix) => Unsigned ix -> String
 showBits u = "0b" ++ reverse
                  [ if testBit u i then '1' else '0'

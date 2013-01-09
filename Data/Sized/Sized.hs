@@ -6,77 +6,28 @@
 -- Maintainer: Andy Gill <andygill@ku.edu>
 -- Stability: unstable
 -- Portability: ghc
-
-{-
-Status of Branch:  NatsNotReady
-
-This branch attempted to replace the data Types X0, (X0_ a) and (X1_ a)
-with the recent addtion to GHC, TypeNats   (Type Level Literals)
-http://hackage.haskell.org/trac/ghc/wiki/TypeNats
-
-Although this branch does successfully build, and "appears" to
-be operational (except for matrix above, beside functions).
-
-At the current time (GHC 7.6 - Dec. 2012),  TypeNats do not fulfill the
-needs of this SizedTypes module, or its usage in KansasLava.
-
-1.  Type level computation with TypeNats is limited:
-(<=) :: Nat -> Nat -> Prop    -- Comparison
-(+)  :: Nat -> Nat -> Nat     -- Addition
-(*)  :: Nat -> Nat -> Nat     -- Multiplication
-(^)  :: Nat -> Nat -> Nat     -- Exponentiation
-        We really need at least Subtraction and Log2 as well.
-Also, these computations are strictly limited in application because,
-for example,  (3 + 7) =/= (7 + 3)
-
-    Couldn't match type `3 GHC.TypeLits.+ 7' with `7 GHC.TypeLits.+ 3'
-    NB: `GHC.TypeLits.+' is a type function, and may not be injective
-    Expected type: 7 GHC.TypeLits.+ 3
-      Actual type: 3 GHC.TypeLits.+ 7
-    In the first argument of `(==)', namely `(m1 `above` m2)'
-
-2.  Template Haskell has not yet been updated to support TypeNats
-and KansasLava uses TH in the defintion of number Rep instances.
-
-3.  Distinguishing between kinds and types with the same name,
-and stablishing constraints in KansasLava was difficult.
-Not able to push this, however, since #2 stopped development
-when defining instances of Rep.
-
-These issues are likely to be resolved in future releases of GHC,
-so it may be worthwhile to re-visit this branch, then.
-
-
--}
-
 {-# LANGUAGE TypeFamilies, ScopedTypeVariables, UndecidableInstances, FlexibleInstances, GADTs  #-}
-{-# LANGUAGE DataKinds, KindSignatures #-}
-module Data.Sized.Sized where
+{-# LANGUAGE DataKinds, KindSignatures, TypeOperators #-}
+module Data.Sized.Sized
+    ( TNat
+    , Sized
+    , fromNat
+    , corners
+    , universe
+    , size
+     )
+    where
 
 import Data.Ix
 import GHC.TypeLits
 
 type TNat (a::Nat) = Sing a
 
-{-
-data Sized :: Nat -> * where
-        Sized :: Integer -> Sized (a :: Nat)
-     deriving (Eq, Ord)
--}
 newtype Sized (n :: Nat) = MkSized Integer
     deriving (Eq, Ord)
 
 fromNat :: Sing (n :: Nat) -> Integer
 fromNat = fromSing
-
--- ----------------------------------------------------------
---  Some common type instances that greatly facilitate
---  type reasoning about Sized types.
-
-type instance (n * 1) = n
-
--- ----------------------------------------------------------
-
 
 -- A finite (bounding) corners of an finite indexed entity
 corners :: forall i . (Bounded i, Ix i) => (i,i)
@@ -111,14 +62,6 @@ instance SingI a => Num (Sized a) where
    signum (MkSized a) = mkSized (signum a)
    fromInteger n = mkSized (fromInteger n)
 
-{-
--- This allows zero-length arrays, later.
-instance Ix (Sized 0) where
-  range   (_,_) = [ ]
-  index   (_,_) _ = error "index using Sized 0"
-  inRange (_,_) _ = False
--}
-
 instance (SingI a) => Ix (Sized a) where
   range   (MkSized n, MkSized m) = [ mkSized x | x <- range (n,m) ]
   index   (MkSized n, MkSized m) (MkSized i) = index (n,m) i
@@ -144,4 +87,3 @@ instance (SingI a) => Integral (Sized a) where
    quotRem a b = (a `quot` b,a `rem` b)
    divMod a b = (a `div` b,a `mod` b)
    toInteger (MkSized n) = n
-
