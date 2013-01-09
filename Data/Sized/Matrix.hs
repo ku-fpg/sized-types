@@ -7,39 +7,36 @@
 -- Stability: unstable
 -- Portability: ghc
 
-{-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, FlexibleContexts, ScopedTypeVariables, UndecidableInstances, MultiParamTypeClasses, TypeOperators, DataKinds, DeriveDataTypeable #-}
+{-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, ScopedTypeVariables,
+  UndecidableInstances, MultiParamTypeClasses, TypeOperators, DataKinds, FlexibleContexts, DeriveDataTypeable #-}
 module Data.Sized.Matrix where
 
-import Data.Array as A hiding (indices,(!), ixmap, assocs)
-import qualified Data.Array as A
 import Prelude as P hiding (all)
 import Control.Applicative
-import qualified Data.Traversable as T hiding (all)
-import qualified Data.Foldable as F hiding (all)
+import qualified Data.Traversable as T
+import qualified Data.Foldable as F
 import qualified Data.List as L hiding (all)
-import Numeric
 import Data.Array.Base as B
 import Data.Array.IArray as I
 import GHC.TypeLits
 import Data.Typeable
-import Data.Dynamic
+import Numeric
 
 import Data.Sized.Sized
 
-
--- | A 'Matrix' is an array with the sized determined uniquely by the
+-- | A 'Matrix' is an array with the size determined uniquely by the
 -- /type/ of the index type, 'ix', with every type in 'ix' used.
 data Matrix ix a = Matrix (Array ix a)
-        deriving (Typeable)
+        deriving (Typeable, Eq, Ord)
+
+-- | A 'Vector' is a 1D Matrix, using a TypeNat to define its length.
+type Vector  (ix :: Nat) a = Matrix (Sized ix) a
+
+-- | A 'Vector2' is a 2D Matrix, using a TypeNat's to define its size.
+type Vector2 (ix :: Nat) (iy :: Nat) a = Matrix (Sized ix,Sized iy) a
 
 instance (Ix ix) => Functor (Matrix ix) where
 	fmap f (Matrix xs) = Matrix (fmap f xs)
-
--- | A 'Vector' is a 1D Matrix.
-type Vector  (ix :: Nat) a = Matrix (Sized ix) a
-
--- | A 'Vector2' is a 2D Matrix.
-type Vector2 (ix :: Nat) (iy :: Nat) a = Matrix (Sized ix,Sized iy) a
 
 instance IArray Matrix a where
    bounds (Matrix arr) = B.bounds arr
@@ -47,9 +44,13 @@ instance IArray Matrix a where
    unsafeArray (a,b) ass = Matrix $ B.unsafeArray (a,b) ass
    unsafeAt (Matrix arr) i = B.unsafeAt arr i
 
+instance (Bounded i, Ix i) => Applicative (Matrix i) where
+    pure a = fmap (const a) coord	-- possible because we are a fixed size
+	                                -- Also why use use newtype here.
+    a <*> b = forAll $ \ i -> (a ! i) (b ! i)
 
 -- | 'matrix' turns a finite list into a matrix. You often need to give the type of the result.
-matrix :: forall i a . (SizedIx i) => [a] -> Matrix i a
+matrix :: forall i a . (Bounded i, Ix i) => [a] -> Matrix i a
 matrix xs | size' == fromIntegral (L.length xs) = I.listArray (low,high) xs
 	    | otherwise = error $ "bad length of fromList for Matrix, "
 			      ++ "expecting " ++ show size' ++ " elements"
@@ -62,48 +63,56 @@ matrix xs | size' == fromIntegral (L.length xs) = I.listArray (low,high) xs
 	high :: i
 	high = maxBound
 
-
 -- | what is the population of a matrix?
-population :: forall i a . (SizedIx i) => Matrix i a -> Int
+population :: forall i a . (Bounded i, Ix i) => Matrix i a -> Int
 population _ = rangeSize (minBound :: i,maxBound)
 
+allIndices :: (Bounded i, Ix i) => Matrix i a -> [i]
+allIndices _ = universe
+
+
+-- | 'zeroOf' is for use to force typing issues, and is 0.
+zeroOf :: (Bounded i, Ix i) => Matrix i a -> i
+zeroOf _ = minBound
+
 -- | 'coord' returns a matrix filled with indexes.
-coord :: (SizedIx i) => Matrix i i
+coord :: (Bounded i, Ix i) => Matrix i i
 coord = matrix universe
 
 -- | Same as for lists.
-zipWith :: (SizedIx i) => (a -> b -> c) -> Matrix i a -> Matrix i b -> Matrix i c
+zipWith :: (Bounded i, Ix i) => (a -> b -> c) -> Matrix i a -> Matrix i b -> Matrix i c
 zipWith f a b = forAll $ \ i -> f (a ! i) (b ! i)
 
 -- | 'forEach' takes a matrix, and calls a function for each element, to give a new matrix of the same size.
-forEach :: (SizedIx i) => Matrix i a -> (i -> a -> b) -> Matrix i b
+forEach :: (Bounded i, Ix i) => Matrix i a -> (i -> a -> b) -> Matrix i b
 forEach a f = Data.Sized.Matrix.zipWith f coord a
 
 -- | 'forAll' creates a matrix out of a mapping from the coordinates.
-forAll :: (SizedIx i) => (i -> a) -> Matrix i a
+forAll :: (Bounded i, Ix i) => (i -> a) -> Matrix i a
 forAll f = fmap f coord
 
-instance (SizedIx i) => Applicative (Matrix i) where
-	pure a = fmap (const a) coord	-- possible because we are a fixed size
-	                                -- Also why use use newtype here.
-	a <*> b = forAll $ \ i -> (a ! i) (b ! i)
-
 -- | 'mm' is the 2D matrix multiply.
-mm :: (SizedIx m, SizedIx n, SizedIx o, Num a) => Matrix (m,n) a -> Matrix (n,o) a -> Matrix (m,o) a
+mm :: (Bounded m, Ix m, Bounded n, Ix n, Bounded o, Ix o, Num a) => Matrix (m,n) a -> Matrix (n,o) a -> Matrix (m,o) a
 mm a b = forAll $ \ (i,j) -> sum [ a ! (i,r) * b ! (r,j) | r <- universe ]
 
 -- | 'transpose' a 2D matrix.
-transpose :: (SizedIx x, SizedIx y) => Matrix (x,y) a -> Matrix (y,x) a
+transpose :: (Bounded x, Ix x, Bounded y, Ix y) => Matrix (x,y) a -> Matrix (y,x) a
 transpose = ixmap corners $ \ (x,y) -> (y,x)
 
-identity :: (SizedIx x, Num a) => Matrix (x,x) a
+-- | return the identity for a specific matrix size.
+identity :: (Bounded x, Ix x, Num a) => Matrix (x,x) a
 identity = (\ (x,y) -> if x == y then 1 else 0) <$> coord
-
 
 -- | append to 1D vectors
 append :: (SingI left, SingI right, SingI (left + right))
       => Vector left a -> Vector right a -> Vector (left + right) a
 append m1 m2 = matrix (I.elems m1 ++ I.elems m2)
+
+-- TODO.  Is the type constraint for 'both' sufficient ?
+-- In an earlier version we had:
+--         , ADD top bottom ~ both
+--         , SUB both top ~ bottom
+--         , SUB both bottom ~ top
 
 -- | stack two matrixes 'above' each other.
 
@@ -116,31 +125,43 @@ beside :: (SingI left, SingI right, SingI x, SingI (left + right))
       => Vector2 x left a -> Vector2 x right a -> Vector2 x (left + right) a
 beside m1 m2 = transpose (transpose m1 `above` transpose m2)
 
+-- | look at a matrix through a functor lens, to another matrix.
+ixfmap :: (Bounded i, Ix i, Bounded j, Ix j, Functor f) => (i -> f j) -> Matrix j a -> Matrix i (f a)
+ixfmap f m = (fmap (\ j -> m ! j) . f) <$> coord
+
+-- FIXME.  This is difficult to do with the simplifications appearing Sized.
+-- The Index class no longer exists (which required addIndex)
+-- Is this required ???
+
+-- | grab /part/ of a matrix.
+--cropAt :: (Index i ~ Index ix, Bounded i, Ix i, Bounded ix, Ix ix) => Matrix ix a -> ix -> Matrix i a
+--cropAt m corner = ixmap (\ i -> (addIndex corner (toIndex i))) m
+
 -- | slice a 2D matrix into rows.
-rows :: (Bounded n, SizedIx n, Bounded m, SizedIx m) => Matrix (m,n) a -> Matrix m (Matrix n a)
+rows :: (Bounded n, Ix n, Bounded m, Ix m) => Matrix (m,n) a -> Matrix m (Matrix n a)
 rows a = (\ m -> matrix [ a ! (m,n) | n <- universe ]) <$> coord
 
 -- | slice a 2D matrix into columns.
-columns :: (Bounded n, SizedIx n, Bounded m, SizedIx m) => Matrix (m,n) a -> Matrix n (Matrix m a)
+columns :: (Bounded n, Ix n, Bounded m, Ix m) => Matrix (m,n) a -> Matrix n (Matrix m a)
 columns = rows . transpose
 
 -- | join a matrix of matrixes into a single matrix.
-joinRows :: (Bounded n, SizedIx n, Bounded m, SizedIx m) => Matrix m (Matrix n a) -> Matrix (m,n) a
+joinRows :: (Bounded n, Ix n, Bounded m, Ix m) => Matrix m (Matrix n a) -> Matrix (m,n) a
 joinRows a = (\ (m,n) -> (a ! m) ! n) <$> coord
 
 -- | join a matrix of matrixes into a single matrix.
-joinColumns :: (Bounded n, SizedIx n, Bounded m, SizedIx m) => Matrix n (Matrix m a) -> Matrix (m,n) a
+joinColumns :: (Bounded n, Ix n, Bounded m, Ix m) => Matrix n (Matrix m a) -> Matrix (m,n) a
 joinColumns a = (\ (m,n) -> (a ! n) ! m) <$> coord
 
-instance (SizedIx ix) => T.Traversable (Matrix ix) where
+instance (Bounded ix, Ix ix) => T.Traversable (Matrix ix) where
   traverse f a = matrix <$> (T.traverse f $ I.elems a)
 
-instance (SizedIx ix) => F.Foldable (Matrix ix) where
+instance (Bounded ix, Ix ix) => F.Foldable (Matrix ix) where
   foldMap f m = F.foldMap f (I.elems m)
 
 -- | 'show2D' displays a 2D matrix, and is the worker for 'show'.
 --
--- > GHCi> matrix [1..42] :: Matrix (X7,X6) Int
+-- > GHCi> matrix [1..42] :: Matrix (Sized 7, Sized 6) Int
 -- > [  1,  2,  3,  4,  5,  6,
 -- >    7,  8,  9, 10, 11, 12,
 -- >   13, 14, 15, 16, 17, 18,
@@ -150,8 +171,7 @@ instance (SizedIx ix) => F.Foldable (Matrix ix) where
 -- >   37, 38, 39, 40, 41, 42 ]
 -- >
 
-
-show2D :: (SizedIx n, SizedIx m, Show a) => Matrix (m, n) a -> String
+show2D :: (Bounded n, Ix n, Bounded m, Ix m, Show a) => Matrix (m, n) a -> String
 show2D m0 = (joinLines $ map showRow m_rows)
 	where
                 m           = fmap show m0
@@ -164,7 +184,7 @@ show2D m0 = (joinLines $ map showRow m_rows)
 		m_rows      = I.elems $ rows m'
 		m_cols_size = fmap (maximum . map L.length . I.elems) m_cols
 
-instance (Show a, Show ix, SizedIx ix) => Show (Matrix ix a) where
+instance (Show a, Show ix, Bounded ix, Ix ix) => Show (Matrix ix a) where
         show m = "matrix " ++ show (I.bounds m) ++ " " ++ show (I.elems m)
 
 -- TODO: read instance
@@ -183,3 +203,28 @@ showAsE i a = S $ showEFloat (Just i) a ""
 showAsF :: (RealFloat a) => Int -> a -> S
 showAsF i a = S $ showFFloat (Just i) a ""
 
+scanM :: (Bounded ix, Ix ix, Enum ix)
+      => ((left,a,right) -> (right,b,left))
+      -> (left, Matrix ix a,right)
+      -> (right,Matrix ix b,left)
+scanM f (l,m,r) =  ( fst3 (tmp ! minBound), snd3 `fmap` tmp, trd3 (tmp ! maxBound) )
+  where tmp = forEach m $ \ i a -> f (prev i, a, next i)
+	prev i = if i == minBound then l else (trd3 (tmp ! (pred i)))
+	next i = if i == maxBound then r else (fst3 (tmp ! (succ i)))
+	fst3 (a,_,_) = a
+	snd3 (_,b,_) = b
+	trd3 (_,_,c) = c
+
+scanL :: (Bounded ix, Ix ix, Enum ix)
+      => ((a,right) -> (right,b))
+      -> (Matrix ix a,right)
+      -> (right,Matrix ix b)
+scanL = error "to be written"
+
+scanR :: (Bounded ix, Ix ix,Enum ix)
+      => ((left,a) -> (b,left))
+      -> (left, Matrix ix a)
+      -> (Matrix ix b,left)
+scanR f (l,m) = ( fst `fmap` tmp, snd (tmp ! maxBound) )
+  where tmp = forEach m $ \ i a -> f (prev i,a)
+	prev i = if i == minBound then l else (snd (tmp ! (pred i)))
