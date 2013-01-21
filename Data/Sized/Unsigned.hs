@@ -20,7 +20,7 @@ module Data.Sized.Unsigned
 	, U30, U31, U32
 	) where
 
-import Data.Array.IArray(elems)
+import Data.Array.IArray(elems, (!))
 import Data.Sized.Matrix as M
 import Data.Sized.Sized
 import Data.Bits
@@ -90,6 +90,11 @@ instance (SingI ix) => Bits (Unsigned ix) where
 	-- it might be possible to loosen the Integral requirement
 -- 	rotate (Ui i = fromVector (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` M.population m)))
 --		where m = toVector v
+
+ 	rotate v i = fromVector (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` mLeng)))
+		where m = toVector v
+                      mLeng = size $ M.zeroOf m
+
         testBit (Unsigned u) idx = testBit u idx
         bit   i  = fromVector (forAll $ \ ix -> if ix == fromIntegral i then True else False)
         popCount n = sum $ fmap (\ b -> if b then 1 else 0) $ elems $ toVector n
