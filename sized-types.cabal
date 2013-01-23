@@ -1,13 +1,13 @@
 Name:                sized-types
 Version:             0.4.1.0
-Synopsis:            Sized types in Haskell using the GHC type nats
-Description:         Providing indices, matrixes, sparse matrixes, and signed and unsigned bit vectors.
+Synopsis:            Sized types in Haskell using the GHC Nat kind.
+Description:         Providing matrixes, sparse matrixes, and signed and unsigned bit vectors, using GHC Nat kind.
 Category:            Language
 License:             BSD3
 License-file:        LICENSE
 Author:              Andy Gill
 Maintainer:          Andy Gill <andygill@ku.edu>
-Copyright:           (c) 2009-2012 The University of Kansas
+Copyright:           (c) 2009-2013 The University of Kansas
 Homepage:            http://www.ittc.ku.edu/csdl/fpg/Tools
 Stability:	     beta
 build-type: 	     Simple
