@@ -22,7 +22,7 @@ import GHC.TypeLits
 import Data.Typeable
 import Numeric
 
-import Data.Sized.Sized
+import Data.Sized.Fin
 
 -- | A 'Matrix' is an array with the size determined uniquely by the
 -- /type/ of the index type, 'ix', with every type in 'ix' used.
@@ -30,10 +30,10 @@ data Matrix ix a = Matrix (Array ix a)
         deriving (Typeable, Eq, Ord)
 
 -- | A 'Vector' is a 1D Matrix, using a TypeNat to define its length.
-type Vector  (ix :: Nat) a = Matrix (Sized ix) a
+type Vector  (ix :: Nat) a = Matrix (Fin ix) a
 
 -- | A 'Vector2' is a 2D Matrix, using a TypeNat's to define its size.
-type Vector2 (ix :: Nat) (iy :: Nat) a = Matrix (Sized ix,Sized iy) a
+type Vector2 (ix :: Nat) (iy :: Nat) a = Matrix (Fin ix,Fin iy) a
 
 instance (Ix ix) => Functor (Matrix ix) where
 	fmap f (Matrix xs) = Matrix (fmap f xs)
@@ -161,7 +161,7 @@ instance (Bounded ix, Ix ix) => F.Foldable (Matrix ix) where
 
 -- | 'show2D' displays a 2D matrix, and is the worker for 'show'.
 --
--- > GHCi> matrix [1..42] :: Matrix (Sized 7, Sized 6) Int
+-- > GHCi> matrix [1..42] :: Matrix (Fin 7, Fin 6) Int
 -- > [  1,  2,  3,  4,  5,  6,
 -- >    7,  8,  9, 10, 11, 12,
 -- >   13, 14, 15, 16, 17, 18,

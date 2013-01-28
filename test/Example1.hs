@@ -2,7 +2,7 @@
 
 module Main where
 
-import Data.Sized.Sized
+import Data.Sized.Fin
 import Data.Sized.Matrix
 import Data.Sized.Signed as S
 import Data.Sized.Unsigned as U
@@ -48,30 +48,30 @@ main = do
 	print $ fmap U.toVector u
 
 
-example1 :: Matrix (Sized 5,Sized 5) Int
+example1 :: Matrix (Fin 5,Fin 5) Int
 example1 = identity
 
-example2 :: Matrix (Sized 3,Sized 4) Int
+example2 :: Matrix (Fin 3,Fin 4) Int
 example2 = matrix [1..12]
 
-example3 :: Matrix (Sized 4,Sized 5) Double
+example3 :: Matrix (Fin 4,Fin 5) Double
 example3 = pure 1.2
 
-example4 :: Matrix (Sized 4,Sized 5) (Sized 4,Sized 5)
+example4 :: Matrix (Fin 4,Fin 5) (Fin 4,Fin 5)
 example4 = coord
 
 -- also works in 2D
-example5 :: Matrix (Sized 6) Bool
+example5 :: Matrix (Fin 6) Bool
 example5 = forAll $ \ i -> i > 3
 
-example6 :: Matrix (Sized 3,Sized 4) Int
+example6 :: Matrix (Fin 3,Fin 4) Int
 example6 = forEach example2 $ \ (i,j) a ->
 		if i == 0 || j == 0 then a else 0
 
-example7 :: Matrix (Sized 10,Sized 10) Int
+example7 :: Matrix (Fin 10,Fin 10) Int
 example7 = matrix [1..100]
 
 
 --      cropAt function no longer supported
--- example8 :: Matrix (Sized 4,Sized 5) Int
+-- example8 :: Matrix (Fin 4,Fin 5) Int
 -- example8 = example7 `cropAt` (2,3)

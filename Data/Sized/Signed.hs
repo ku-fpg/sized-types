@@ -21,7 +21,7 @@ module Data.Sized.Signed
 
 import Data.Array.IArray(elems, (!))
 import Data.Sized.Matrix as M
-import Data.Sized.Sized
+import Data.Sized.Fin
 import Data.Bits
 import GHC.TypeLits
 

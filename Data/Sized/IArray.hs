@@ -13,7 +13,7 @@ import Data.Array.Base as B
 import Data.Array.IArray as I
 import GHC.TypeLits
 
-import Data.Sized.Sized
+import Data.Sized.Fin
 
 -- | 'fromList' turns a finite list into a (n-dimentional) matrix. You often need to give the type of the result.
 matrix :: forall m i a . (IArray m a, SizedIx i) => [a] -> m i a

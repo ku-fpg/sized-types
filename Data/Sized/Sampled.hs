@@ -3,7 +3,7 @@ module Data.Sized.Sampled where
 
 import Data.Sized.Signed as S
 import Data.Sized.Matrix as M
-import Data.Sized.Sized
+import Data.Sized.Fin
 
 import GHC.TypeLits
 
