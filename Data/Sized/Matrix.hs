@@ -1,6 +1,6 @@
 -- | Sized matrixes.
 --
--- Copyright: (c) 2009 University of Kansas
+-- Copyright: (c) 2013 University of Kansas
 -- License: BSD3
 --
 -- Maintainer: Andy Gill <andygill@ku.edu>
@@ -26,7 +26,7 @@ import Data.Sized.Fin
 
 -- | A 'Matrix' is an array with the size determined uniquely by the
 -- /type/ of the index type, 'ix', with every type in 'ix' used.
-data Matrix ix a = Matrix (Array ix a)
+newtype Matrix ix a = Matrix (Array ix a)
         deriving (Typeable, Eq, Ord)
 
 -- | A 'Vector' is a 1D Matrix, using a TypeNat to define its length.
@@ -69,7 +69,6 @@ population _ = rangeSize (minBound :: i,maxBound)
 
 allIndices :: (Bounded i, Ix i) => Matrix i a -> [i]
 allIndices _ = universe
-
 
 -- | 'zeroOf' is for use to force typing issues, and is 0.
 zeroOf :: (Bounded i, Ix i) => Matrix i a -> i
@@ -202,29 +201,3 @@ showAsE i a = S $ showEFloat (Just i) a ""
 
 showAsF :: (RealFloat a) => Int -> a -> S
 showAsF i a = S $ showFFloat (Just i) a ""
-
-scanM :: (Bounded ix, Ix ix, Enum ix)
-      => ((left,a,right) -> (right,b,left))
-      -> (left, Matrix ix a,right)
-      -> (right,Matrix ix b,left)
-scanM f (l,m,r) =  ( fst3 (tmp ! minBound), snd3 `fmap` tmp, trd3 (tmp ! maxBound) )
-  where tmp = forEach m $ \ i a -> f (prev i, a, next i)
-	prev i = if i == minBound then l else (trd3 (tmp ! (pred i)))
-	next i = if i == maxBound then r else (fst3 (tmp ! (succ i)))
-	fst3 (a,_,_) = a
-	snd3 (_,b,_) = b
-	trd3 (_,_,c) = c
-
-scanL :: (Bounded ix, Ix ix, Enum ix)
-      => ((a,right) -> (right,b))
-      -> (Matrix ix a,right)
-      -> (right,Matrix ix b)
-scanL = error "to be written"
-
-scanR :: (Bounded ix, Ix ix,Enum ix)
-      => ((left,a) -> (b,left))
-      -> (left, Matrix ix a)
-      -> (Matrix ix b,left)
-scanR f (l,m) = ( fst `fmap` tmp, snd (tmp ! maxBound) )
-  where tmp = forEach m $ \ i a -> f (prev i,a)
-	prev i = if i == minBound then l else (snd (tmp ! (pred i)))

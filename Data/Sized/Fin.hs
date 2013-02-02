@@ -1,6 +1,6 @@
--- | Fin types X0 to X256.
+-- | Fin types
 --
--- Copyright: (c) 2009 University of Kansas
+-- Copyright: (c) 2013 University of Kansas
 -- License: BSD3
 --
 -- Maintainer: Andy Gill <andygill@ku.edu>
@@ -15,7 +15,7 @@ module Data.Sized.Fin
     , corners
     , universe
     , size
-     )
+    )
     where
 
 import Data.Ix
@@ -46,11 +46,11 @@ size :: forall ix . (Bounded ix, Ix ix) => ix -> Int
 size _ = rangeSize (corners :: (ix,ix))
 
 mkFin :: forall x . SingI x => Integer -> Fin x
-mkFin n | m == 0 = error "<<Fin 0>>"
-          | n < 0  = error $ show n ++ " (:: Fin " ++ show m ++ ") is below upper bound"
-          | n >= m = error $ show n ++ " (:: Fin " ++ show m ++ ") is above upper bound"
-          | otherwise = Fin n
-                where m = fromSing (sing :: Sing x)
+mkFin n  | m == 0 = error "<<Fin 0>>"
+         | n < 0  = error $ show n ++ " (:: Fin " ++ show m ++ ") is below upper bound"
+         | n >= m = error $ show n ++ " (:: Fin " ++ show m ++ ") is above upper bound"
+         | otherwise = Fin n
+                where m = fromNat (sing :: Sing x)
 
 instance Show (Fin a) where
    show (Fin a) = show a
