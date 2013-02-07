@@ -1,6 +1,6 @@
 -- | Sized matrixes.
 --
--- Copyright: (c) 2009 University of Kansas
+-- Copyright: (c) 2013 University of Kansas
 -- License: BSD3
 --
 -- Maintainer: Andy Gill <andygill@ku.edu>
@@ -22,18 +22,18 @@ import GHC.TypeLits
 import Data.Typeable
 import Numeric
 
-import Data.Sized.Sized
+import Data.Sized.Fin
 
 -- | A 'Matrix' is an array with the size determined uniquely by the
 -- /type/ of the index type, 'ix', with every type in 'ix' used.
-data Matrix ix a = Matrix (Array ix a)
+newtype Matrix ix a = Matrix (Array ix a)
         deriving (Typeable, Eq, Ord)
 
 -- | A 'Vector' is a 1D Matrix, using a TypeNat to define its length.
-type Vector  (ix :: Nat) a = Matrix (Sized ix) a
+type Vector  (ix :: Nat) a = Matrix (Fin ix) a
 
 -- | A 'Vector2' is a 2D Matrix, using a TypeNat's to define its size.
-type Vector2 (ix :: Nat) (iy :: Nat) a = Matrix (Sized ix,Sized iy) a
+type Vector2 (ix :: Nat) (iy :: Nat) a = Matrix (Fin ix,Fin iy) a
 
 instance (Ix ix) => Functor (Matrix ix) where
 	fmap f (Matrix xs) = Matrix (fmap f xs)
@@ -69,7 +69,6 @@ population _ = rangeSize (minBound :: i,maxBound)
 
 allIndices :: (Bounded i, Ix i) => Matrix i a -> [i]
 allIndices _ = universe
-
 
 -- | 'zeroOf' is for use to force typing issues, and is 0.
 zeroOf :: (Bounded i, Ix i) => Matrix i a -> i
@@ -161,7 +160,7 @@ instance (Bounded ix, Ix ix) => F.Foldable (Matrix ix) where
 
 -- | 'show2D' displays a 2D matrix, and is the worker for 'show'.
 --
--- > GHCi> matrix [1..42] :: Matrix (Sized 7, Sized 6) Int
+-- > GHCi> matrix [1..42] :: Matrix (Fin 7, Fin 6) Int
 -- > [  1,  2,  3,  4,  5,  6,
 -- >    7,  8,  9, 10, 11, 12,
 -- >   13, 14, 15, 16, 17, 18,
@@ -202,29 +201,3 @@ showAsE i a = S $ showEFloat (Just i) a ""
 
 showAsF :: (RealFloat a) => Int -> a -> S
 showAsF i a = S $ showFFloat (Just i) a ""
-
-scanM :: (Bounded ix, Ix ix, Enum ix)
-      => ((left,a,right) -> (right,b,left))
-      -> (left, Matrix ix a,right)
-      -> (right,Matrix ix b,left)
-scanM f (l,m,r) =  ( fst3 (tmp ! minBound), snd3 `fmap` tmp, trd3 (tmp ! maxBound) )
-  where tmp = forEach m $ \ i a -> f (prev i, a, next i)
-	prev i = if i == minBound then l else (trd3 (tmp ! (pred i)))
-	next i = if i == maxBound then r else (fst3 (tmp ! (succ i)))
-	fst3 (a,_,_) = a
-	snd3 (_,b,_) = b
-	trd3 (_,_,c) = c
-
-scanL :: (Bounded ix, Ix ix, Enum ix)
-      => ((a,right) -> (right,b))
-      -> (Matrix ix a,right)
-      -> (right,Matrix ix b)
-scanL = error "to be written"
-
-scanR :: (Bounded ix, Ix ix,Enum ix)
-      => ((left,a) -> (b,left))
-      -> (left, Matrix ix a)
-      -> (Matrix ix b,left)
-scanR f (l,m) = ( fst `fmap` tmp, snd (tmp ! maxBound) )
-  where tmp = forEach m $ \ i a -> f (prev i,a)
-	prev i = if i == minBound then l else (snd (tmp ! (pred i)))

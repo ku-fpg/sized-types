@@ -22,7 +22,7 @@ module Data.Sized.Unsigned
 
 import Data.Array.IArray(elems, (!))
 import Data.Sized.Matrix as M
-import Data.Sized.Sized
+import Data.Sized.Fin
 import Data.Bits
 import Data.Ix
 import GHC.TypeLits

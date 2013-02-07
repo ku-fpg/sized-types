@@ -5,12 +5,12 @@ module QC.QC where
 import qualified Test.QuickCheck as QC
 import Data.Ix
 
-import Data.Sized.Sized
+import Data.Sized.Fin
 import Data.Sized.Matrix
 
 import GHC.TypeLits
 
-instance (SingI n) => QC.Arbitrary (Sized n) where
+instance (SingI n) => QC.Arbitrary (Fin n) where
 	arbitrary = QC.elements [minBound .. maxBound]
 
 instance (QC.Arbitrary ix, Bounded ix, Ix ix, QC.Arbitrary a) => QC.Arbitrary (Matrix ix a) where

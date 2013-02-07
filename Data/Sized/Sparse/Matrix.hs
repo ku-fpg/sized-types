@@ -13,7 +13,7 @@ module Data.Sized.Sparse.Matrix where
 
 import Data.Array.Base as B
 import Data.Ix
-import Data.Sized.Sized as X
+import Data.Sized.Fin as X
 import qualified Data.Sized.Matrix as M
 import qualified Data.Map as Map
 import Data.Map (Map)
