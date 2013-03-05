@@ -7,7 +7,10 @@
 -- Stability: unstable
 -- Portability: ghc
 {-# LANGUAGE TypeFamilies, ScopedTypeVariables, UndecidableInstances, FlexibleInstances, GADTs, DeriveDataTypeable  #-}
-{-# LANGUAGE DataKinds, KindSignatures, TypeOperators #-}
+{-# LANGUAGE CPP, DataKinds, KindSignatures, TypeOperators #-}
+#if __GLASGOW_HASKELL__ >= 707
+{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable #-}
+#endif
 module Data.Sized.Fin
     ( TNat
     , Fin
@@ -27,8 +30,12 @@ type TNat (a::Nat) = Sing a
 newtype Fin (n :: Nat) = Fin Integer
     deriving (Eq, Ord)
 
+#if __GLASGOW_HASKELL__ >= 707
+deriving instance Typeable Fin
+#else
 instance SingI nat => Typeable (Fin (nat :: Nat)) where
   typeOf _ = mkTyConApp (mkTyCon3 "sized-types" "Data.Sized.Fin" ("Fin#" ++ show (fromSing (sing :: Sing nat)))) []
+#endif
 
 fromNat :: Sing (n :: Nat) -> Integer
 fromNat = fromSing

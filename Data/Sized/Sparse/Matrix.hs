@@ -1,6 +1,6 @@
 -- | Sparse Matrix.
 --
--- Copyright: (c) 2009 University of Kansas
+-- Copyright: (c) 2009-2013 University of Kansas
 -- License: BSD3
 --
 -- Maintainer: Andy Gill <andygill@ku.edu>

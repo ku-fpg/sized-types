@@ -1,8 +1,11 @@
-{-# LANGUAGE ScopedTypeVariables, TypeFamilies, DataKinds, FlexibleContexts, DataKinds #-}
+{-# LANGUAGE ScopedTypeVariables, TypeFamilies, CPP, FlexibleContexts, DataKinds #-}
+#if __GLASGOW_HASKELL__ >= 707
+{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable #-}
+#endif
 
 -- | Unsigned, fixed sized numbers.
 --
--- Copyright: (c) 2009 University of Kansas
+-- Copyright: (c) 2009-2013 University of Kansas
 -- License: BSD3
 --
 -- Maintainer: Andy Gill <andygill@ku.edu>
@@ -105,8 +108,12 @@ showBits u = "0b" ++ reverse
                  | i <- [0..(bitSize u - 1)]
                  ]
 
+#if __GLASGOW_HASKELL__ >= 707
+deriving instance Typeable Unsigned
+#else
 instance SingI nat => Typeable (Unsigned (nat :: Nat)) where
   typeOf _ = mkTyConApp (mkTyCon3 "sized-types" "Data.Sized.Unsigned" ("Unsigned#" ++ show (fromSing (sing :: Sing nat)))) []
+#endif
 
 instance (SingI ix) => Bounded (Unsigned ix) where
 	minBound = Unsigned 0
