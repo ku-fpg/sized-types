@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables, TypeFamilies, DataKinds, FlexibleContexts, DataKinds #-}
+{-# LANGUAGE ScopedTypeVariables, TypeFamilies, DataKinds, FlexibleContexts, DataKinds, DeriveDataTypeable #-}
 
 -- | Signed, fixed sized numbers.
 --
@@ -23,10 +23,10 @@ import Data.Array.IArray(elems, (!))
 import Data.Sized.Matrix as M
 import Data.Sized.Fin
 import Data.Bits
-import GHC.TypeLits
+import Data.Typeable
 
 newtype Signed (ix :: Nat) = Signed Integer
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Typeable)
 
 -- 'toVector' turns a sized 'Signed' value into a 'Vector' of 'Bool's.
 toVector :: forall ix . (SingI ix) => Signed ix -> Vector ix Bool

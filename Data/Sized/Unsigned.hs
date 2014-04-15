@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables, TypeFamilies, DataKinds, FlexibleContexts, DataKinds #-}
+{-# LANGUAGE ScopedTypeVariables, TypeFamilies, DataKinds, FlexibleContexts, DataKinds, DeriveDataTypeable #-}
 
 -- | Unsigned, fixed sized numbers.
 --
@@ -25,11 +25,10 @@ import Data.Sized.Matrix as M
 import Data.Sized.Fin
 import Data.Bits
 import Data.Ix
-import GHC.TypeLits
 import Data.Typeable
 
 newtype Unsigned (ix :: Nat) = Unsigned Integer
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Typeable)
 
 -- 'toVector' turns a sized 'Unsigned' value into a 'Vector' of 'Bool's.
 toVector :: forall ix . (SingI ix) => Unsigned ix -> Vector ix Bool
@@ -104,9 +103,6 @@ showBits u = "0b" ++ reverse
                  [ if testBit u i then '1' else '0'
                  | i <- [0..(bitSize u - 1)]
                  ]
-
-instance SingI nat => Typeable (Unsigned (nat :: Nat)) where
-  typeOf _ = mkTyConApp (mkTyCon3 "sized-types" "Data.Sized.Unsigned" ("Unsigned#" ++ show (fromSing (sing :: Sing nat)))) []
 
 instance (SingI ix) => Bounded (Unsigned ix) where
 	minBound = Unsigned 0

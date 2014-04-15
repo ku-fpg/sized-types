@@ -4,16 +4,14 @@ module Main where
 
 import Data.Sized.Matrix
 
-import GHC.TypeLits
-
 import QC.QC()
 import Test.QuickCheck as QC
 -- import qualified Data.Sized.Sparse.Matrix as SM
 
 
 -- NatType equivalences required for the join tests.
-type instance (4 + 5) = 9
-type instance (3 + 7) = 10
+--type instance (4 + 5) = 9
+--type instance (3 + 7) = 10
 
 -- Small first cut at tests.
 main :: IO ()

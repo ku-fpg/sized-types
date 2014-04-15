@@ -5,8 +5,6 @@ import Data.Sized.Signed as S
 import Data.Sized.Matrix as M
 import Data.Sized.Fin
 
-import GHC.TypeLits
-
 -- A signed fixed precision number, with max value m, via n sampled bits.
 
 -- We add an extra bit, to represent the *sign*.

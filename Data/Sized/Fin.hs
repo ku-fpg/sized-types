@@ -9,26 +9,26 @@
 {-# LANGUAGE TypeFamilies, ScopedTypeVariables, UndecidableInstances, FlexibleInstances, GADTs, DeriveDataTypeable  #-}
 {-# LANGUAGE DataKinds, KindSignatures, TypeOperators #-}
 module Data.Sized.Fin
-    ( TNat
-    , Fin
+    ( -- TNat
+      Fin
     , fromNat
     , corners
     , universe
     , size
+    , module Data.Singletons
+    , Nat
     )
     where
 
 import Data.Ix
-import GHC.TypeLits
 import Data.Typeable
+import Data.Singletons
+import Data.Singletons.TypeLits
 
-type TNat (a::Nat) = Sing a
+--type TNat (a::Nat) = Sing a
 
 newtype Fin (n :: Nat) = Fin Integer
-    deriving (Eq, Ord)
-
-instance SingI nat => Typeable (Fin (nat :: Nat)) where
-  typeOf _ = mkTyConApp (mkTyCon3 "sized-types" "Data.Sized.Fin" ("Fin#" ++ show (fromSing (sing :: Sing nat)))) []
+    deriving (Eq, Ord, Typeable)
 
 fromNat :: Sing (n :: Nat) -> Integer
 fromNat = fromSing

@@ -1,5 +1,5 @@
 Name:                sized-types
-Version:             0.4.1.1
+Version:             0.4.2.0
 Synopsis:            Sized types in Haskell using the GHC Nat kind.
 Description:         Providing matrixes, sparse matrixes, and signed and unsigned bit vectors, using GHC Nat kind.
 Category:            Language
@@ -18,15 +18,14 @@ Flag all
   Default:     False
 
 Library
-  Build-Depends: base >= 4 && < 5, containers, array
+  Build-Depends: base >= 4 && < 5, containers, array, singletons
   Exposed-modules:
        Data.Sized.Fin,
        Data.Sized.Matrix,
        Data.Sized.Sparse.Matrix,
        Data.Sized.Signed,
        Data.Sized.Unsigned,
-       Data.Sized.Sampled,
-       Data.Sized.TypeNatInstances
+       Data.Sized.Sampled
 
   Ghc-Options:  -Wall -O2
 

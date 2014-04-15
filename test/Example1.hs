@@ -8,11 +8,9 @@ import Data.Sized.Signed as S
 import Data.Sized.Unsigned as U
 import Control.Applicative
 
-import GHC.TypeLits
-
 -- NatType equivalences required for the above and beside tests.
-type instance (3 + 3) = 6
-type instance (4 + 4) = 8
+--type instance (3 + 3) = 6
+--type instance (4 + 4) = 8
 
 
 main :: IO ()
