@@ -34,7 +34,7 @@ fromNat :: Sing (n :: Nat) -> Integer
 fromNat = fromSing
 
 -- A finite (bounding) corners of an finite indexed entity
-corners :: forall i . (Bounded i, Ix i) => (i,i)
+corners :: forall i . (Bounded i) => (i,i)
 corners = (minBound :: i,maxBound)
 
 -- | A list of all possible values of a type.

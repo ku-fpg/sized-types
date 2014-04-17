@@ -78,8 +78,8 @@ instance (SingI ix) => Enum (Signed ix) where
 	toEnum n = mkSigned (toInteger n)
 
 instance (SingI ix) => Bits (Signed ix) where
-	bitSize _ = fromIntegral (fromNat (sing :: Sing ix))
-
+	bitSizeMaybe = return . finiteBitSize
+        bitSize = finiteBitSize
 	complement (Signed v) = Signed (complement v)
 	isSigned _ = True
 	a `xor` b = fromVector (M.zipWith (/=) (toVector a) (toVector b))
@@ -95,6 +95,8 @@ instance (SingI ix) => Bits (Signed ix) where
         bit   i  = fromVector (forAll $ \ ix -> if ix == fromIntegral i then True else False)
         popCount n = sum $ fmap (\ b -> if b then 1 else 0) $ elems $ toVector n
 
+instance (SingI ix) => FiniteBits (Signed ix) where
+	finiteBitSize _ = fromIntegral (fromNat (sing :: Sing ix))
 
 instance forall ix . (SingI ix) => Bounded (Signed ix) where
 	minBound = Signed (- maxMagnitude)

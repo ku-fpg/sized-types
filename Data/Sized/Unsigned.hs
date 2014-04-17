@@ -75,8 +75,8 @@ instance (SingI ix) => Enum (Unsigned ix) where
 	toEnum n = mkUnsigned (toInteger n)
 
 instance (SingI ix) => Bits (Unsigned ix) where
-        bitSize _ = fromIntegral (fromNat (sing :: Sing ix))
-
+	bitSizeMaybe = return . finiteBitSize
+        bitSize = finiteBitSize
 	complement (Unsigned v) = Unsigned (complement v)
 	isSigned _ = False
 	(Unsigned a) `xor` (Unsigned b) = Unsigned (a `xor` b)
@@ -98,10 +98,13 @@ instance (SingI ix) => Bits (Unsigned ix) where
         bit   i  = fromVector (forAll $ \ ix -> if ix == fromIntegral i then True else False)
         popCount n = sum $ fmap (\ b -> if b then 1 else 0) $ elems $ toVector n
 
+instance (SingI ix) => FiniteBits (Unsigned ix) where
+	finiteBitSize _ = fromIntegral (fromNat (sing :: Sing ix))
+
 showBits :: (SingI ix) => Unsigned ix -> String
 showBits u = "0b" ++ reverse
                  [ if testBit u i then '1' else '0'
-                 | i <- [0..(bitSize u - 1)]
+                 | i <- [0..(finiteBitSize u - 1)]
                  ]
 
 instance (SingI ix) => Bounded (Unsigned ix) where
