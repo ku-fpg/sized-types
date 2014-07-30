@@ -1,14 +1,11 @@
-
 -- Copy this module if you need Quick Check.
 module QC.QC where
 
+import           Data.Ix
+import           Data.Sized.Fin
+import           Data.Sized.Matrix
+
 import qualified Test.QuickCheck as QC
-import Data.Ix
-
-import Data.Sized.Fin
-import Data.Sized.Matrix
-
-import GHC.TypeLits
 
 instance (SingI n) => QC.Arbitrary (Fin n) where
 	arbitrary = QC.elements [minBound .. maxBound]

@@ -22,7 +22,7 @@ Library
           base >= 4.7 && < 5,
           array       == 0.5.*,
           containers  == 0.5.*,
-          singletons  == 0.10.*
+          singletons  >= 0.10 && < 1.1
   Exposed-modules:
        Data.Sized.Fin,
        Data.Sized.Matrix,
@@ -38,13 +38,13 @@ Executable sized-types-test1
      Build-Depends: base, QuickCheck >= 2.0
      buildable: True
      Other-modules:
-       QC
+       QC.QC
    else
      Build-depends: base
      buildable: False
    Main-Is:        Test1.hs
-   Hs-Source-Dirs: ., test, qc
-   Ghc-Options: -Wall
+   Hs-Source-Dirs: ., test
+   Ghc-Options: -Wall -fno-warn-orphans
 
 Executable sized-types-example1
    if flag(all)
