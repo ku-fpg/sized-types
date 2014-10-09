@@ -9,50 +9,48 @@ Author:              Andy Gill
 Maintainer:          Andy Gill <andygill@ku.edu>
 Copyright:           (c) 2009-2013 The University of Kansas
 Homepage:            http://www.ittc.ku.edu/csdl/fpg/Tools
-Stability:	     beta
-build-type: 	     Simple
-Cabal-Version:       >= 1.6
+Stability:           beta
+build-type:          Simple
+Cabal-Version:       >= 1.8
 
 Flag all
-  Description: Enable full development tree
-  Default:     False
+  Description:         Enable full development tree
+  Default:             False
 
 Library
-  Build-Depends: 
-          base >= 4.7 && < 5,
-          array       == 0.5.*,
-          containers  == 0.5.*,
-          singletons  >= 0.10 && < 1.1
-  Exposed-modules:
-       Data.Sized.Fin,
-       Data.Sized.Matrix,
-       Data.Sized.Sparse.Matrix,
-       Data.Sized.Signed,
-       Data.Sized.Unsigned,
-       Data.Sized.Sampled
+  Build-Depends:       base        >= 4.6  && < 5,
+                       array       == 0.5.*,
+                       containers  == 0.5.*,
+                       singletons  >= 0.10 && < 1.1
+  Exposed-modules:     Data.Sized.Fin,
+                       Data.Sized.Matrix,
+                       Data.Sized.Sparse.Matrix,
+                       Data.Sized.Signed,
+                       Data.Sized.Unsigned,
+                       Data.Sized.Sampled
+  Ghc-Options:         -Wall -O2
 
-  Ghc-Options:  -Wall -O2
-
-Executable sized-types-test1
+test-suite sized-types-test1
    if flag(all)
-     Build-Depends: base, QuickCheck >= 2.0
-     buildable: True
-     Other-modules:
-       QC.QC
+     buildable:        True
    else
-     Build-depends: base
-     buildable: False
-   Main-Is:        Test1.hs
-   Hs-Source-Dirs: ., test
-   Ghc-Options: -Wall -fno-warn-orphans
+     buildable:        False
+   type:               exitcode-stdio-1.0
+   Build-Depends:      base,
+                       QuickCheck  >= 2.0,
+                       sized-types == 0.5.0
+   Main-Is:            Test1.hs
+   Other-modules:      QC.QC
+   Hs-Source-Dirs:     test
+   Ghc-Options:        -Wall
 
 Executable sized-types-example1
    if flag(all)
-     Build-Depends: base
-     buildable: True
+     buildable:        True
    else
-     Build-depends: base
-     buildable: False
-   Main-Is:        Example1.hs
-   Hs-Source-Dirs: ., test
-   Ghc-Options: -Wall
+     buildable:        False
+   Build-depends:      base,
+                       sized-types == 0.5.0
+   Main-Is:            Example1.hs
+   Hs-Source-Dirs:     test
+   Ghc-Options:        -Wall

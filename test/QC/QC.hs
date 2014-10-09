@@ -1,4 +1,5 @@
 -- Copy this module if you need Quick Check.
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module QC.QC where
 
 import           Data.Ix
