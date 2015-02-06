@@ -11,6 +11,7 @@ Copyright:           (c) 2009-2013 The University of Kansas
 Homepage:            http://www.ittc.ku.edu/csdl/fpg/Tools
 Stability:           beta
 build-type:          Simple
+extra-source-files:  CHANGELOG.md, README
 Cabal-Version:       >= 1.8
 
 Flag all
