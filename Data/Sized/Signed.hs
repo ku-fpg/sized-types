@@ -10,14 +10,14 @@
 -- Portability: ghc
 
 module Data.Sized.Signed
-	( Signed
-	, toVector
-	, fromVector
-	,           S2,  S3,  S4,  S5,  S6,  S7,  S8,  S9
-	, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19
-	, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29
-	, S30, S31, S32
-	) where
+    ( Signed
+    , toVector
+    , fromVector
+    ,           S2,  S3,  S4,  S5,  S6,  S7,  S8,  S9
+    , S10, S11, S12, S13, S14, S15, S16, S17, S18, S19
+    , S20, S21, S22, S23, S24, S25, S26, S27, S28, S29
+    , S30, S31, S32
+    ) where
 
 import Data.Array.IArray(elems, (!))
 import Data.Sized.Matrix as M
@@ -35,74 +35,74 @@ toVector (Signed v) = matrix $ take (fromIntegral $ fromSing (sing :: Sing ix)) 
 -- 'fromVector' turns a 'Vector' of 'Bool's into a sized 'Signed' value.
 fromVector :: (SingI ix) => Vector ix Bool -> Signed ix
 fromVector m = mkSigned $
-	  sum [ n
-	      | (n,b) <- zip (iterate (* 2) 1)
-			      (elems m)
-	      , b
-	      ]
+    sum [ n
+        | (n,b) <- zip (iterate (* 2) 1)
+                       (elems m)
+        , b
+        ]
 --
 mkSigned :: forall ix . (SingI ix) => Integer -> Signed ix
 mkSigned v = res
     where sz' = 2 ^ bitCount
           bitCount :: Integer
-	  bitCount =  fromIntegral (fromNat (sing :: Sing ix) - 1)
-	  res = case divMod v sz' of
-	  	  (s,v') | even s    -> Signed v'
-		         | otherwise -> Signed (v' - sz')
+          bitCount =  fromIntegral (fromNat (sing :: Sing ix) - 1)
+          res = case divMod v sz' of
+                  (s,v') | even s    -> Signed v'
+                         | otherwise -> Signed (v' - sz')
 
 instance (SingI ix) => Show (Signed ix) where
-	show (Signed a) = show a
+    show (Signed a) = show a
 
 instance (SingI ix) => Read (Signed ix) where
-	readsPrec i str = [ (mkSigned a,r) | (a,r) <- readsPrec i str ]
+    readsPrec i str = [ (mkSigned a,r) | (a,r) <- readsPrec i str ]
 
 instance (SingI ix) => Integral (Signed ix) where
-  	toInteger (Signed m) = m
-	quotRem (Signed a) (Signed b) =
-		case quotRem a b of
-		   (q,r) -> (mkSigned q,mkSigned r)
+    toInteger (Signed m) = m
+    quotRem (Signed a) (Signed b) =
+        case quotRem a b of
+             (q,r) -> (mkSigned q,mkSigned r)
 
 instance (SingI ix) => Num (Signed ix) where
-	(Signed a) + (Signed b) = mkSigned $ a + b
-	(Signed a) - (Signed b) = mkSigned $ a - b
-	(Signed a) * (Signed b) = mkSigned $ a * b
-	abs (Signed n) = mkSigned $ abs n
-	signum (Signed n) = mkSigned $ signum n
-	fromInteger n = mkSigned n
+    (Signed a) + (Signed b) = mkSigned $ a + b
+    (Signed a) - (Signed b) = mkSigned $ a - b
+    (Signed a) * (Signed b) = mkSigned $ a * b
+    abs (Signed n) = mkSigned $ abs n
+    signum (Signed n) = mkSigned $ signum n
+    fromInteger n = mkSigned n
 
 instance (SingI ix) => Real (Signed ix) where
-	toRational (Signed n) = toRational n
+    toRational (Signed n) = toRational n
 
 instance (SingI ix) => Enum (Signed ix) where
-	fromEnum (Signed n) = fromEnum n
-	toEnum n = mkSigned (toInteger n)
+    fromEnum (Signed n) = fromEnum n
+    toEnum n = mkSigned (toInteger n)
 
 instance (SingI ix) => Bits (Signed ix) where
-	bitSizeMaybe = return . finiteBitSize
-        bitSize = finiteBitSize
-	complement (Signed v) = Signed (complement v)
-	isSigned _ = True
-	a `xor` b = fromVector (M.zipWith (/=) (toVector a) (toVector b))
-	a .|. b = fromVector (M.zipWith (||) (toVector a) (toVector b))
-	a .&. b = fromVector (M.zipWith (&&) (toVector a) (toVector b))
-	shiftL (Signed v) i = mkSigned (v * (2 ^ i))
-	shiftR (Signed v) i = mkSigned (v `div` (2 ^ i))
- 	rotate v i = fromVector (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` mLeng)))
-		where m = toVector v
-                      mLeng = size $ M.zeroOf m
-        testBit u idx = toVector u ! (fromIntegral idx)
-        -- new is 7.6?
-        bit   i  = fromVector (forAll $ \ ix -> if ix == fromIntegral i then True else False)
-        popCount n = sum $ fmap (\ b -> if b then 1 else 0) $ elems $ toVector n
+    bitSizeMaybe = return . finiteBitSize
+    bitSize = finiteBitSize
+    complement (Signed v) = Signed (complement v)
+    isSigned _ = True
+    a `xor` b = fromVector (M.zipWith (/=) (toVector a) (toVector b))
+    a .|. b = fromVector (M.zipWith (||) (toVector a) (toVector b))
+    a .&. b = fromVector (M.zipWith (&&) (toVector a) (toVector b))
+    shiftL (Signed v) i = mkSigned (v * (2 ^ i))
+    shiftR (Signed v) i = mkSigned (v `div` (2 ^ i))
+    rotate v i = fromVector (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` mLeng)))
+      where m = toVector v
+            mLeng = size $ M.zeroOf m
+    testBit u idx = toVector u ! (fromIntegral idx)
+    -- new is 7.6?
+    bit   i  = fromVector (forAll $ \ ix -> if ix == fromIntegral i then True else False)
+    popCount n = sum $ fmap (\ b -> if b then 1 else 0) $ elems $ toVector n
 
 instance (SingI ix) => FiniteBits (Signed ix) where
-	finiteBitSize _ = fromIntegral (fromNat (sing :: Sing ix))
+    finiteBitSize _ = fromIntegral (fromNat (sing :: Sing ix))
 
 instance forall ix . (SingI ix) => Bounded (Signed ix) where
-	minBound = Signed (- maxMagnitude)
-            where maxMagnitude = 2 ^ (fromNat (sing :: Sing ix) - 1)
-        maxBound = Signed (maxMagnitude - 1)
-            where maxMagnitude = 2 ^ (fromNat (sing :: Sing ix) - 1)
+    minBound = Signed (- maxMagnitude)
+      where maxMagnitude = 2 ^ (fromNat (sing :: Sing ix) - 1)
+    maxBound = Signed (maxMagnitude - 1)
+      where maxMagnitude = 2 ^ (fromNat (sing :: Sing ix) - 1)
 
 
 type S2 = Signed 2

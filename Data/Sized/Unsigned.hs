@@ -10,15 +10,15 @@
 -- Portability: ghc
 
 module Data.Sized.Unsigned
-	( Unsigned
-	, toVector
-	, fromVector
-        , showBits
-	,      U1,  U2,  U3,  U4,  U5,  U6,  U7,  U8,  U9
-	, U10, U11, U12, U13, U14, U15, U16, U17, U18, U19
-	, U20, U21, U22, U23, U24, U25, U26, U27, U28, U29
-	, U30, U31, U32
-	) where
+    ( Unsigned
+    , toVector
+    , fromVector
+    , showBits
+    ,      U1,  U2,  U3,  U4,  U5,  U6,  U7,  U8,  U9
+    , U10, U11, U12, U13, U14, U15, U16, U17, U18, U19
+    , U20, U21, U22, U23, U24, U25, U26, U27, U28, U29
+    , U30, U31, U32
+    ) where
 
 import Data.Array.IArray(elems, (!))
 import Data.Sized.Matrix as M
@@ -37,69 +37,69 @@ toVector (Unsigned v) = matrix $ take (fromIntegral $ fromSing (sing :: Sing ix)
 -- 'fromVector' turns a 'Vector' of 'Bool's into sized 'Unsigned' value.
 fromVector :: (SingI ix) => Vector ix Bool -> Unsigned ix
 fromVector m = mkUnsigned $
-	  sum [ n
-	      | (n,b) <- zip (iterate (* 2) 1)
-			      (elems m)
-	      , b
-	      ]
+    sum [ n
+        | (n,b) <- zip (iterate (* 2) 1)
+                       (elems m)
+        , b
+        ]
 
 mkUnsigned :: forall ix . (SingI ix) => Integer -> Unsigned ix
 mkUnsigned x = Unsigned (x `mod` (2 ^ bitCount))
     where bitCount = fromNat (sing :: Sing ix)
 
 instance Show (Unsigned ix) where
-	show (Unsigned a) = show a
+    show (Unsigned a) = show a
 
 instance (SingI ix) => Read (Unsigned ix) where
-	readsPrec i str = [ (mkUnsigned a,r) | (a,r) <- readsPrec i str ]
+    readsPrec i str = [ (mkUnsigned a,r) | (a,r) <- readsPrec i str ]
 
 instance (SingI ix) => Integral (Unsigned ix) where
-  	toInteger (Unsigned m) = m
-	quotRem (Unsigned a) (Unsigned b) =
-		case quotRem a b of
-		   (q,r) -> (mkUnsigned q,mkUnsigned r) -- TODO: check for size
+    toInteger (Unsigned m) = m
+    quotRem (Unsigned a) (Unsigned b) =
+        case quotRem a b of
+             (q,r) -> (mkUnsigned q,mkUnsigned r) -- TODO: check for size
 
 instance (SingI ix) => Num (Unsigned ix) where
-	(Unsigned a) + (Unsigned b) = mkUnsigned $ a + b
-	(Unsigned a) - (Unsigned b) = mkUnsigned $ a - b
-	(Unsigned a) * (Unsigned b) = mkUnsigned $ a * b
-	abs (Unsigned n) = mkUnsigned $ abs n
-	signum (Unsigned n) = mkUnsigned $ signum n
-	fromInteger n = mkUnsigned n
+    (Unsigned a) + (Unsigned b) = mkUnsigned $ a + b
+    (Unsigned a) - (Unsigned b) = mkUnsigned $ a - b
+    (Unsigned a) * (Unsigned b) = mkUnsigned $ a * b
+    abs (Unsigned n) = mkUnsigned $ abs n
+    signum (Unsigned n) = mkUnsigned $ signum n
+    fromInteger n = mkUnsigned n
 
 instance (SingI ix) => Real (Unsigned ix) where
-	toRational (Unsigned n) = toRational n
+    toRational (Unsigned n) = toRational n
 
 instance (SingI ix) => Enum (Unsigned ix) where
-	fromEnum (Unsigned n) = fromEnum n
-	toEnum n = mkUnsigned (toInteger n)
+    fromEnum (Unsigned n) = fromEnum n
+    toEnum n = mkUnsigned (toInteger n)
 
 instance (SingI ix) => Bits (Unsigned ix) where
-	bitSizeMaybe = return . finiteBitSize
-        bitSize = finiteBitSize
-	complement (Unsigned v) = Unsigned (complement v)
-	isSigned _ = False
-	(Unsigned a) `xor` (Unsigned b) = Unsigned (a `xor` b)
-	(Unsigned a) .|. (Unsigned b) = Unsigned (a .|. b)
-	(Unsigned a) .&. (Unsigned b) = Unsigned (a .&. b)
-	shiftL (Unsigned v) i = mkUnsigned (shiftL v i)
-	shiftR (Unsigned v) i = mkUnsigned (shiftR v i)
+    bitSizeMaybe = return . finiteBitSize
+    bitSize = finiteBitSize
+    complement (Unsigned v) = Unsigned (complement v)
+    isSigned _ = False
+    (Unsigned a) `xor` (Unsigned b) = Unsigned (a `xor` b)
+    (Unsigned a) .|. (Unsigned b) = Unsigned (a .|. b)
+    (Unsigned a) .&. (Unsigned b) = Unsigned (a .&. b)
+    shiftL (Unsigned v) i = mkUnsigned (shiftL v i)
+    shiftR (Unsigned v) i = mkUnsigned (shiftR v i)
 
 -- TODO: fix
-	-- it might be possible to loosen the Integral requirement
--- 	rotate (Ui i = fromVector (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` M.population m)))
---		where m = toVector v
+    -- it might be possible to loosen the Integral requirement
+-- rotate (Ui i = fromVector (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` M.population m)))
+--   where m = toVector v
 
- 	rotate v i = fromVector (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` mLeng)))
-		where m = toVector v
-                      mLeng = size $ M.zeroOf m
+    rotate v i = fromVector (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` mLeng)))
+      where m = toVector v
+            mLeng = size $ M.zeroOf m
 
-        testBit (Unsigned u) idx = testBit u idx
-        bit   i  = fromVector (forAll $ \ ix -> if ix == fromIntegral i then True else False)
-        popCount n = sum $ fmap (\ b -> if b then 1 else 0) $ elems $ toVector n
+    testBit (Unsigned u) idx = testBit u idx
+    bit   i  = fromVector (forAll $ \ ix -> if ix == fromIntegral i then True else False)
+    popCount n = sum $ fmap (\ b -> if b then 1 else 0) $ elems $ toVector n
 
 instance (SingI ix) => FiniteBits (Unsigned ix) where
-	finiteBitSize _ = fromIntegral (fromNat (sing :: Sing ix))
+    finiteBitSize _ = fromIntegral (fromNat (sing :: Sing ix))
 
 showBits :: (SingI ix) => Unsigned ix -> String
 showBits u = "0b" ++ reverse
@@ -108,8 +108,8 @@ showBits u = "0b" ++ reverse
                  ]
 
 instance (SingI ix) => Bounded (Unsigned ix) where
-	minBound = Unsigned 0
-        maxBound = Unsigned (2 ^ (fromNat (sing :: Sing ix)) - 1)
+    minBound = Unsigned 0
+    maxBound = Unsigned (2 ^ (fromNat (sing :: Sing ix)) - 1)
 
 -- We do not address efficiency in this implementation.
 instance (SingI ix) => Ix (Unsigned ix) where

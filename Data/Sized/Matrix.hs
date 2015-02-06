@@ -36,7 +36,7 @@ type Vector  (ix :: Nat) a = Matrix (Fin ix) a
 type Vector2 (ix :: Nat) (iy :: Nat) a = Matrix (Fin ix,Fin iy) a
 
 instance (Ix ix) => Functor (Matrix ix) where
-	fmap f (Matrix xs) = Matrix (fmap f xs)
+    fmap f (Matrix xs) = Matrix (fmap f xs)
 
 instance IArray Matrix a where
    bounds (Matrix arr) = B.bounds arr
@@ -45,23 +45,23 @@ instance IArray Matrix a where
    unsafeAt (Matrix arr) i = B.unsafeAt arr i
 
 instance (Bounded i, Ix i) => Applicative (Matrix i) where
-    pure a = fmap (const a) coord	-- possible because we are a fixed size
-	                                -- Also why use use newtype here.
+    pure a = fmap (const a) coord   -- possible because we are a fixed size
+                                    -- Also why use use newtype here.
     a <*> b = forAll $ \ i -> (a ! i) (b ! i)
 
 -- | 'matrix' turns a finite list into a matrix. You often need to give the type of the result.
 matrix :: forall i a . (Bounded i, Ix i) => [a] -> Matrix i a
 matrix xs | size' == fromIntegral (L.length xs) = I.listArray (low,high) xs
-	    | otherwise = error $ "bad length of fromList for Matrix, "
-			      ++ "expecting " ++ show size' ++ " elements"
-			      ++ ", found " ++ show (L.length xs) ++ " elements."
+          | otherwise = error $ "bad length of fromList for Matrix, "
+                ++ "expecting " ++ show size' ++ " elements"
+                ++ ", found " ++ show (L.length xs) ++ " elements."
 
     where
         size' = rangeSize (low,high)
-  	low :: i
-	low = minBound
-	high :: i
-	high = maxBound
+        low :: i
+        low = minBound
+        high :: i
+        high = maxBound
 
 -- | what is the population of a matrix?
 population :: forall i a . (Bounded i, Ix i) => Matrix i a -> Int
@@ -172,16 +172,16 @@ instance (Bounded ix, Ix ix) => F.Foldable (Matrix ix) where
 
 show2D :: (Bounded n, Ix n, Bounded m, Ix m, Show a) => Matrix (m, n) a -> String
 show2D m0 = (joinLines $ map showRow m_rows)
-	where
-                m           = fmap show m0
-		m'	    = forEach m $ \ (x,y) a -> (x == maxBound && y == maxBound,a)
-		joinLines   = unlines . addTail . L.zipWith (++) ("[":repeat " ")
-		addTail xs  = init xs ++ [last xs ++ " ]"]
-		showRow	r   = concat (I.elems $ Data.Sized.Matrix.zipWith showEle r m_cols_size)
-		showEle (f,str) s = take (s - L.length str) (cycle " ") ++ " " ++ str ++ (if f then "" else ",")
-		m_cols      = columns m
-		m_rows      = I.elems $ rows m'
-		m_cols_size = fmap (maximum . map L.length . I.elems) m_cols
+  where
+    m           = fmap show m0
+    m'          = forEach m $ \ (x,y) a -> (x == maxBound && y == maxBound,a)
+    joinLines   = unlines . addTail . L.zipWith (++) ("[":repeat " ")
+    addTail xs  = init xs ++ [last xs ++ " ]"]
+    showRow r   = concat (I.elems $ Data.Sized.Matrix.zipWith showEle r m_cols_size)
+    showEle (f,str) s = take (s - L.length str) (cycle " ") ++ " " ++ str ++ (if f then "" else ",")
+    m_cols      = columns m
+    m_rows      = I.elems $ rows m'
+    m_cols_size = fmap (maximum . map L.length . I.elems) m_cols
 
 instance (Show a, Show ix, Bounded ix, Ix ix) => Show (Matrix ix a) where
         show m = "matrix " ++ show (I.bounds m) ++ " " ++ show (I.elems m)
@@ -194,7 +194,7 @@ instance (Show a, Show ix, Bounded ix, Ix ix) => Show (Matrix ix a) where
 newtype S = S String
 
 instance Show S where
-	show (S s) = s
+    show (S s) = s
 
 showAsE :: (RealFloat a) => Int -> a -> S
 showAsE i a = S $ showEFloat (Just i) a ""
