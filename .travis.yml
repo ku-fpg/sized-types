@@ -1,0 +1,16 @@
+language: haskell
+
+ghc:
+  - 7.6.3
+  - 7.8.3
+
+install:
+  - cabal update
+  - cabal install -j -fall --only-dependencies --enable-tests
+
+script:
+  - |
+    cabal configure -fall --enable-tests
+    cabal build
+    cabal test
+    make runtests
