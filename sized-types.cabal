@@ -29,7 +29,7 @@ Library
        Data.Sized.Vector,
        Data.Sized.Sampled
 
-  Ghc-Options:  -Wall -O2
+  Ghc-Options:  -Wall
 
 Executable sized-types-test1
     if flag(all)
@@ -54,3 +54,13 @@ Executable sized-types-example1
     Main-Is:        Example1.hs
     Hs-Source-Dirs: ., test
     Ghc-Options: -Wall
+
+source-repository head
+  type:     git
+  location: git://github.com/ku-fpg/sized-types
+
+source-repository this
+  type:     git
+  location: git://github.com/ku-fpg/sized-types
+  branch:   sized-types-0.3
+  tag:      0.3.5.1
