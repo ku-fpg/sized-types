@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables, TypeFamilies, DataKinds, FlexibleContexts, DataKinds, DeriveDataTypeable #-}
+{-# LANGUAGE ScopedTypeVariables, TypeFamilies, DataKinds, FlexibleContexts, DataKinds, DeriveDataTypeable, CPP #-}
 
 -- | Signed, fixed sized numbers.
 --
@@ -26,7 +26,12 @@ import Data.Bits
 import Data.Typeable
 
 newtype Signed (ix :: Nat) = Signed Integer
-    deriving (Eq, Ord, Typeable)
+    deriving ( Eq
+             , Ord
+#if __GLASGOW_HASKELL__ >= 708
+             , Typeable
+#endif
+             )
 
 -- 'toVector' turns a sized 'Signed' value into a 'Vector' of 'Bool's.
 toVector :: forall ix . (SingI ix) => Signed ix -> Vector ix Bool

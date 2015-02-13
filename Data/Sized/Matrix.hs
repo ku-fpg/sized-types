@@ -8,7 +8,8 @@
 -- Portability: ghc
 
 {-# LANGUAGE TypeFamilies, RankNTypes, FlexibleInstances, ScopedTypeVariables,
-  UndecidableInstances, MultiParamTypeClasses, TypeOperators, DataKinds, FlexibleContexts, DeriveDataTypeable #-}
+  UndecidableInstances, MultiParamTypeClasses, TypeOperators, DataKinds,
+  FlexibleContexts, DeriveDataTypeable, CPP #-}
 module Data.Sized.Matrix where
 
 import Prelude as P hiding (all)
@@ -27,7 +28,12 @@ import Data.Sized.Fin
 -- | A 'Matrix' is an array with the size determined uniquely by the
 -- /type/ of the index type, 'ix', with every type in 'ix' used.
 newtype Matrix ix a = Matrix (Array ix a)
-        deriving (Typeable, Eq, Ord)
+        deriving ( Eq
+                 , Ord
+#if __GLASGOW_HASKELL__ >= 708
+                 , Typeable
+#endif
+                 )
 
 -- | A 'Vector' is a 1D Matrix, using a TypeNat to define its length.
 type Vector  (ix :: Nat) a = Matrix (Fin ix) a

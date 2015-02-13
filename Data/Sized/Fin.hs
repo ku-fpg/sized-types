@@ -7,7 +7,7 @@
 -- Stability: unstable
 -- Portability: ghc
 {-# LANGUAGE TypeFamilies, ScopedTypeVariables, UndecidableInstances, FlexibleInstances, GADTs, DeriveDataTypeable  #-}
-{-# LANGUAGE DataKinds, KindSignatures, TypeOperators #-}
+{-# LANGUAGE DataKinds, KindSignatures, TypeOperators, CPP #-}
 module Data.Sized.Fin
     ( -- TNat
       Fin
@@ -28,7 +28,12 @@ import Data.Singletons.TypeLits
 --type TNat (a::Nat) = Sing a
 
 newtype Fin (n :: Nat) = Fin Integer
-    deriving (Eq, Ord, Typeable)
+    deriving ( Eq
+             , Ord
+#if __GLASGOW_HASKELL__ >= 708
+             , Typeable
+#endif
+             )
 
 fromNat :: Sing (n :: Nat) -> Integer
 fromNat = fromSing

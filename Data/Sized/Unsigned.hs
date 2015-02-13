@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables, TypeFamilies, DataKinds, FlexibleContexts, DataKinds, DeriveDataTypeable #-}
+{-# LANGUAGE ScopedTypeVariables, TypeFamilies, DataKinds, FlexibleContexts, DataKinds, DeriveDataTypeable, CPP #-}
 
 -- | Unsigned, fixed sized numbers.
 --
@@ -28,7 +28,12 @@ import Data.Ix
 import Data.Typeable
 
 newtype Unsigned (ix :: Nat) = Unsigned Integer
-    deriving (Eq, Ord, Typeable)
+    deriving ( Eq
+             , Ord
+#if __GLASGOW_HASKELL__ >= 708
+             , Typeable
+#endif
+             )
 
 -- 'toVector' turns a sized 'Unsigned' value into a 'Vector' of 'Bool's.
 toVector :: forall ix . (SingI ix) => Unsigned ix -> Vector ix Bool
