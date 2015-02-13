@@ -2,23 +2,19 @@ language: haskell
 
 ghc:
   - 7.6.3
-  - 7.8.3
+  - 7.8.4
 
 before_install:
-  - export GHCVER=`ghc --numeric-version`
+  - cabal install cabal-install
+  - export PATH=$HOME/.cabal/bin:$PATH
+  - cabal --version
 
 install:
   - cabal update
-  - |
-    if [ $GHCVER = "7.6.3" ]; then
-      cabal install -j -fall --only-dependencies --enable-tests --constraint=containers==0.5.0.0
-    else
-      cabal install -j -fall --only-dependencies --enable-tests
-    fi
+  - cabal install -j -fall --only-dependencies --enable-tests
 
 script:
-  - |
-    cabal configure -fall --enable-tests
-    cabal build
-    cabal test
-    make runtests
+  - cabal configure -fall --enable-tests
+  - cabal build
+  - cabal test
+  - make runtests
