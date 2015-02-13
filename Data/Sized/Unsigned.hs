@@ -111,7 +111,7 @@ instance (SingI ix) => Bits (Unsigned ix) where
 instance (SingI ix) => FiniteBits (Unsigned ix) where
     finiteBitSize _ = fromIntegral (fromNat (sing :: Sing ix))
 #else
-finiteBitSize :: SingI ix => Unsigned (ix :: Nat) -> Int
+finiteBitSize :: forall (ix :: Nat). SingI ix => Unsigned ix -> Int
 finiteBitSize _ = fromIntegral (fromNat (sing :: Sing ix))
 #endif
 
