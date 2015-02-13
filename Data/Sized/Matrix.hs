@@ -19,8 +19,10 @@ import qualified Data.Foldable as F
 import qualified Data.List as L hiding (all)
 import Data.Array.Base as B
 import Data.Array.IArray as I
-import GHC.TypeLits
+import GHC.TypeLits (type (+))
+#if __GLASGOW_HASKELL__ >= 708
 import Data.Typeable
+#endif
 import Numeric
 
 import Data.Sized.Fin

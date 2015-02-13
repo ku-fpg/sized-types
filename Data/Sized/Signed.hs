@@ -23,7 +23,9 @@ import Data.Array.IArray(elems, (!))
 import Data.Sized.Matrix as M
 import Data.Sized.Fin
 import Data.Bits
+#if __GLASGOW_HASKELL__ >= 708
 import Data.Typeable
+#endif
 
 newtype Signed (ix :: Nat) = Signed Integer
     deriving ( Eq

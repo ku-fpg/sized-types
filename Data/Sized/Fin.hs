@@ -21,7 +21,9 @@ module Data.Sized.Fin
     where
 
 import Data.Ix
+#if __GLASGOW_HASKELL__ >= 708
 import Data.Typeable
+#endif
 import Data.Singletons
 import Data.Singletons.TypeLits
 

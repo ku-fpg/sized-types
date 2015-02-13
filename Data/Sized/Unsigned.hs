@@ -25,7 +25,9 @@ import Data.Sized.Matrix as M
 import Data.Sized.Fin
 import Data.Bits
 import Data.Ix
+#if __GLASGOW_HASKELL__ >= 708
 import Data.Typeable
+#endif
 
 newtype Unsigned (ix :: Nat) = Unsigned Integer
     deriving ( Eq
