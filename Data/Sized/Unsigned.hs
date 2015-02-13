@@ -82,8 +82,10 @@ instance (SingI ix) => Enum (Unsigned ix) where
     toEnum n = mkUnsigned (toInteger n)
 
 instance (SingI ix) => Bits (Unsigned ix) where
+#if MIN_VERSION_base(4,7,0)
     bitSizeMaybe = return . finiteBitSize
-    bitSize = finiteBitSize
+#endif
+    bitSize _ = fromIntegral (fromNat (sing :: Sing ix))
     complement (Unsigned v) = Unsigned (complement v)
     isSigned _ = False
     (Unsigned a) `xor` (Unsigned b) = Unsigned (a `xor` b)

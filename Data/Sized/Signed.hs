@@ -85,8 +85,10 @@ instance (SingI ix) => Enum (Signed ix) where
     toEnum n = mkSigned (toInteger n)
 
 instance (SingI ix) => Bits (Signed ix) where
+#if MIN_VERSION_base(4,7,0)
     bitSizeMaybe = return . finiteBitSize
-    bitSize = finiteBitSize
+#endif
+    bitSize _ = fromIntegral (fromNat (sing :: Sing ix))
     complement (Signed v) = Signed (complement v)
     isSigned _ = True
     a `xor` b = fromVector (M.zipWith (/=) (toVector a) (toVector b))
