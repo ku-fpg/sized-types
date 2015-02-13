@@ -20,7 +20,7 @@ Flag all
 
 Library
   Build-Depends:       base        >= 4.6  && < 5,
-                       array       == 0.5.*,
+                       array       >= 0.4,
                        containers  == 0.5.*,
                        singletons  >= 0.10 && < 1.2
   Exposed-modules:     Data.Sized.Fin,
