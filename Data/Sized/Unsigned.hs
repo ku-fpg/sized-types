@@ -105,8 +105,10 @@ instance (SingI ix) => Bits (Unsigned ix) where
     bit   i  = fromVector (forAll $ \ ix -> if ix == fromIntegral i then True else False)
     popCount n = sum $ fmap (\ b -> if b then 1 else 0) $ elems $ toVector n
 
+#if MIN_VERSION_base(4,7,0)
 instance (SingI ix) => FiniteBits (Unsigned ix) where
     finiteBitSize _ = fromIntegral (fromNat (sing :: Sing ix))
+#endif
 
 showBits :: (SingI ix) => Unsigned ix -> String
 showBits u = "0b" ++ reverse
