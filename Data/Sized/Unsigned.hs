@@ -85,7 +85,7 @@ instance (SingI ix) => Bits (Unsigned ix) where
 #if MIN_VERSION_base(4,7,0)
     bitSizeMaybe = return . finiteBitSize
 #endif
-    bitSize _ = fromIntegral (fromNat (sing :: Sing ix))
+    bitSize = finiteBitSize
     complement (Unsigned v) = Unsigned (complement v)
     isSigned _ = False
     (Unsigned a) `xor` (Unsigned b) = Unsigned (a `xor` b)
@@ -110,6 +110,9 @@ instance (SingI ix) => Bits (Unsigned ix) where
 #if MIN_VERSION_base(4,7,0)
 instance (SingI ix) => FiniteBits (Unsigned ix) where
     finiteBitSize _ = fromIntegral (fromNat (sing :: Sing ix))
+#else
+finiteBitSize :: SingI ix => Unisgned ix -> Int
+finiteBitSize _ = fromIntegral (fromNat (sing :: Sing ix))
 #endif
 
 showBits :: (SingI ix) => Unsigned ix -> String

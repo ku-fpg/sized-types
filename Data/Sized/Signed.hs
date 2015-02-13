@@ -88,7 +88,7 @@ instance (SingI ix) => Bits (Signed ix) where
 #if MIN_VERSION_base(4,7,0)
     bitSizeMaybe = return . finiteBitSize
 #endif
-    bitSize _ = fromIntegral (fromNat (sing :: Sing ix))
+    bitSize = finiteBitSize
     complement (Signed v) = Signed (complement v)
     isSigned _ = True
     a `xor` b = fromVector (M.zipWith (/=) (toVector a) (toVector b))
@@ -107,6 +107,9 @@ instance (SingI ix) => Bits (Signed ix) where
 #if MIN_VERSION_base(4,7,0)
 instance (SingI ix) => FiniteBits (Signed ix) where
     finiteBitSize _ = fromIntegral (fromNat (sing :: Sing ix))
+#else
+finiteBitSize :: SingI ix => Signed ix -> Int
+finiteBitSize _ = fromIntegral (fromNat (sing :: Sing ix))
 #endif
 
 instance forall ix . (SingI ix) => Bounded (Signed ix) where
