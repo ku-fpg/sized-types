@@ -9,10 +9,15 @@ import Data.Sized.Unsigned as U
 #if !(MIN_VERSION_base(4,8,0))
 import Control.Applicative
 #endif
+#if !(MIN_VERSION_base(4,7,0))
+import GHC.TypeLits
+#endif
 
 -- NatType equivalences required for the above and beside tests.
---type instance (3 + 3) = 6
---type instance (4 + 4) = 8
+#if !(MIN_VERSION_base(4,7,0))
+type instance (3 + 3) = 6
+type instance (4 + 4) = 8
+#endif
 
 
 main :: IO ()

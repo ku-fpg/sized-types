@@ -1,4 +1,4 @@
-{-# LANGUAGE DataKinds, TypeFamilies, TypeOperators #-}
+{-# LANGUAGE CPP, DataKinds, TypeFamilies, TypeOperators #-}
 
 module Main where
 
@@ -7,11 +7,15 @@ import Data.Sized.Matrix
 import QC.QC()
 import Test.QuickCheck as QC
 -- import qualified Data.Sized.Sparse.Matrix as SM
-
+#if !(MIN_VERSION_base(4,7,0))
+import GHC.TypeLits
+#endif
 
 -- NatType equivalences required for the join tests.
---type instance (4 + 5) = 9
---type instance (3 + 7) = 10
+#if !(MIN_VERSION_base(4,7,0))
+type instance (4 + 5) = 9
+type instance (3 + 7) = 10
+#endif
 
 -- Small first cut at tests.
 main :: IO ()
