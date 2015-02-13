@@ -5,7 +5,7 @@ To build development version, and run tests use
 ```
 % cabal configure -fall
 % cabal build
-``
+```
 
 To run tests, do
 
