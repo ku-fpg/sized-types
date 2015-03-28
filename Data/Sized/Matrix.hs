@@ -13,7 +13,9 @@
 module Data.Sized.Matrix where
 
 import Prelude as P hiding (all)
+#if !(MIN_VERSION_base(4,8,0))
 import Control.Applicative
+#endif
 import qualified Data.Traversable as T
 import qualified Data.Foldable as F
 import qualified Data.List as L hiding (all)
