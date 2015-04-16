@@ -28,5 +28,5 @@ script:
  - cabal build
  - cabal test --show-details=always
  - make runtests
- - cabal check
+# - cabal check
  - cabal sdist

@@ -14,6 +14,10 @@ build-type:          Simple
 extra-source-files:  CHANGELOG.md, README.md
 Cabal-Version:       >= 1.8
 
+source-repository head
+  type:                git
+  location:            https://github.com/ku-fpg/sized-types
+
 Flag all
   Description:         Enable full development tree
   Default:             False
