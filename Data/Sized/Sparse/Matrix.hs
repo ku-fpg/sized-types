@@ -7,8 +7,9 @@
 -- Stability: unstable
 -- Portability: ghc
 
-{-# LANGUAGE CPP, TypeFamilies, RankNTypes, FlexibleInstances, ScopedTypeVariables,
-  UndecidableInstances, MultiParamTypeClasses, TypeOperators, DataKinds #-}
+{-# LANGUAGE NoImplicitPrelude, TypeFamilies, RankNTypes, FlexibleInstances,
+  ScopedTypeVariables, UndecidableInstances, MultiParamTypeClasses,
+  TypeOperators, DataKinds #-}
 module Data.Sized.Sparse.Matrix where
 
 import Data.Array.Base as B
@@ -19,9 +20,8 @@ import qualified Data.Map as Map
 import Data.Map (Map)
 import qualified Data.Set as Set
 import Data.Set (Set)
-#if !(MIN_VERSION_base(4,8,0))
 import Control.Applicative
-#endif
+import Prelude.Compat
 
 data SpMatrix ix a = SpMatrix a (Map ix a)
 

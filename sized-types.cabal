@@ -23,10 +23,11 @@ Flag all
   Default:             False
 
 Library
-  Build-Depends:       base        >= 4.6  && < 5,
-                       array       >= 0.4,
+  Build-Depends:       array       >= 0.4,
+                       base        >= 4.6   && < 5,
+                       base-compat >= 0.8.1 && < 1,
                        containers  == 0.5.*,
-                       singletons  >= 0.10 && < 1.2
+                       singletons  >= 0.10  && < 1.2
   Exposed-modules:     Data.Sized.Fin,
                        Data.Sized.Matrix,
                        Data.Sized.Sparse.Matrix,
@@ -55,6 +56,7 @@ Executable sized-types-example1
    else
      buildable:        False
    Build-depends:      base,
+                       base-compat >= 0.8.1 && < 1,
                        sized-types == 0.5.1
    Main-Is:            Example1.hs
    Hs-Source-Dirs:     test
