@@ -34,7 +34,7 @@ Library
                        Data.Sized.Signed,
                        Data.Sized.Unsigned,
                        Data.Sized.Sampled
-  Ghc-Options:         -Wall -O2
+  Ghc-Options:         -Wall
 
 test-suite sized-types-test1
    if flag(all)
