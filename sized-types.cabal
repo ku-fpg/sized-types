@@ -15,6 +15,7 @@ extra-source-files:  CHANGELOG.md, README.md
 tested-with:         GHC == 7.6.3
                    , GHC == 7.8.4
                    , GHC == 7.10.3
+                   , GHC == 8.0.1
 Cabal-Version:       >= 1.8
 
 source-repository head
@@ -30,7 +31,7 @@ Library
                        base        >= 4.6   && < 5,
                        base-compat >= 0.8.1 && < 1,
                        containers  == 0.5.*,
-                       singletons  >= 0.10  && < 2.2
+                       singletons  >= 0.10  && < 2.3
   Exposed-modules:     Data.Sized.Fin,
                        Data.Sized.Matrix,
                        Data.Sized.Sparse.Matrix,
