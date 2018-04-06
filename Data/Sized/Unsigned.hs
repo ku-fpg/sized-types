@@ -69,10 +69,8 @@ instance (Size ix) => Enum (Unsigned ix) where
 	fromEnum (Unsigned n) = fromEnum n
 	toEnum n = mkUnsigned (toInteger n)
 instance (Size ix, Integral ix) => Bits (Unsigned ix) where
-	bitSize s = f s undefined
-	  where
-		f :: (Size a) => Unsigned a -> a -> Int
-		f _ ix = size ix
+	bitSize s = size (undefined :: ix)
+        bitSizeMaybe = Just . bitSize
 	complement = fromMatrix . fmap not . toMatrix
 	isSigned _ = False
 	a `xor` b = fromMatrix (M.zipWith (/=) (toMatrix a) (toMatrix b))
@@ -84,6 +82,8 @@ instance (Size ix, Integral ix) => Bits (Unsigned ix) where
  	rotate v i = fromMatrix (forAll $ \ ix -> m ! (fromIntegral ((fromIntegral ix - i) `mod` M.length m)))
 		where m = toMatrix v
         testBit u idx = toMatrix u ! (fromIntegral idx)
+instance (Size ix, Integral ix) => FiniteBits (Unsigned ix) where
+    finiteBitSize s = size (undefined :: ix)
 
 instance forall ix . (Size ix) => Bounded (Unsigned ix) where
 	minBound = Unsigned 0
