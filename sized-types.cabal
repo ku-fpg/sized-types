@@ -30,8 +30,8 @@ Library
   Build-Depends:       array       >= 0.4,
                        base        >= 4.6   && < 5,
                        base-compat >= 0.8.1 && < 1,
-                       containers  == 0.5.*,
-                       singletons  >= 0.10  && < 2.3
+                       containers  >= 0.5   && < 0.7,
+                       singletons  >= 0.10  && < 2.6
   Exposed-modules:     Data.Sized.Fin,
                        Data.Sized.Matrix,
                        Data.Sized.Sparse.Matrix,

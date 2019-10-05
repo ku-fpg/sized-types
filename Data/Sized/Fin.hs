@@ -27,8 +27,6 @@ import Data.Typeable
 import Data.Singletons
 import Data.Singletons.TypeLits
 
---type TNat (a::Nat) = Sing a
-
 newtype Fin (n :: Nat) = Fin Integer
     deriving ( Eq
              , Ord
@@ -37,7 +35,11 @@ newtype Fin (n :: Nat) = Fin Integer
 #endif
              )
 
+#if MIN_VERSION_singletons(2, 4, 0)
+fromNat :: Sing (n :: Nat) -> Demote Nat
+#else
 fromNat :: Sing (n :: Nat) -> Integer
+#endif
 fromNat = fromSing
 
 -- A finite (bounding) corners of an finite indexed entity
@@ -55,7 +57,7 @@ size _ = rangeSize (corners :: (ix,ix))
 mkFin :: forall x . SingI x => Integer -> Fin x
 mkFin n  | m == 0 = error "<<Fin 0>>"
          | n < 0  = error $ show n ++ " (:: Fin " ++ show m ++ ") is below upper bound"
-         | n >= m = error $ show n ++ " (:: Fin " ++ show m ++ ") is above upper bound"
+         | n >= (fromIntegral m) = error $ show n ++ " (:: Fin " ++ show m ++ ") is above upper bound"
          | otherwise = Fin n
                 where m = fromNat (sing :: Sing x)
 
@@ -81,7 +83,7 @@ instance (SingI a) => Ix (Fin a) where
 
 instance SingI a => Bounded (Fin a) where
    minBound = mkFin 0
-   maxBound = n where n = mkFin (fromSing (sing :: Sing a) - 1)
+   maxBound = n where n = mkFin ((fromIntegral $ fromSing (sing :: Sing a)) - 1)
 
 instance Enum (Fin a) where
    fromEnum (Fin n) = fromIntegral n
